@@ -308,7 +308,10 @@ const MENU_CAJA = [
 ];
 
 let fbUrl='', comandas={}, filter='todas';
-let polling=null, lastKeys=new Set();
+let polling=null;
+// Persistir keys ya alertadas en localStorage para sobrevivir recargas
+let lastKeys=new Set(JSON.parse(localStorage.getItem('rolys_seen_keys')||'[]'));
+function saveSeenKeys(){ localStorage.setItem('rolys_seen_keys', JSON.stringify([...lastKeys])); }
 let addMenuKey=null, amTab=MENU_CAJA[0].cat, amSelV={};
 let editMode={};
 
@@ -338,8 +341,9 @@ async function poll(){
     for(const key of Object.keys(data)){
       if(!lastKeys.has(key)){
         showAlerta(data[key]);playBeep();
-        if(btChar)printTicket(data[key]);
+        if(typeof PRINT_SERVER!=='undefined' && PRINT_SERVER && !PRINT_SERVER.includes('XXX')) printTicket(data[key]);
         lastKeys.add(key);
+        saveSeenKeys();
       }
     }
     comandas=data;
@@ -537,7 +541,7 @@ async function addToComanda(itemId){
 // ELIMINAR
 async function eliminar(key){
   if(!confirm('¿Eliminar esta comanda?'))return;
-  try{await fetch(`${fbUrl}/comandas/${key}.json`,{method:'DELETE'});delete comandas[key];lastKeys.delete(key);renderList();updateStats();}
+  try{await fetch(`${fbUrl}/comandas/${key}.json`,{method:'DELETE'});delete comandas[key];lastKeys.delete(key);saveSeenKeys();renderList();updateStats();}
   catch{toast('Error',true);}
 }
 
@@ -559,7 +563,7 @@ async function ejecutarCorte(){
   if(!confirm('¿Cerrar el día? Esto eliminará TODAS las comandas y no se puede deshacer.'))return;
   try{
     await fetch(`${fbUrl}/comandas.json`,{method:'DELETE'});
-    comandas={};lastKeys.clear();editMode={};
+    comandas={};lastKeys.clear();saveSeenKeys();editMode={};
     document.getElementById('corteOv').classList.remove('show');
     renderList();updateStats();
     toast('Día cerrado ✓ — Comandas limpiadas');
