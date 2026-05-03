@@ -118,15 +118,16 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .am-ef{width:100%;background:var(--g1);border:1px solid var(--g3);border-radius:5px;font-size:11px;padding:3px 6px;outline:none;}
 
 /* ACTIONS */
-.cmd-actions{border-top:1px solid var(--g2);padding:8px 10px;display:flex;gap:5px;background:var(--off);flex-wrap:wrap;}
-.btn-estado{flex:1;min-width:0;padding:7px 4px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;text-align:center;}
-.btn-pendiente{background:var(--amber-bg);color:var(--amber);border:1.5px solid var(--amber);}
-.btn-lista{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green);}
-.btn-entregado{background:var(--g2);color:var(--g5);border:1.5px solid var(--g3);}
-.btn-imprimir{background:var(--red);color:#fff;border:none;padding:7px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;}
-.btn-editar{background:var(--blue-faint);border:1.5px solid var(--blue);color:var(--blue);padding:7px 8px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;}
-.btn-agregar{background:var(--green-bg);border:1.5px solid var(--green);color:var(--green);padding:7px 8px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;}
-.btn-eliminar{background:transparent;border:1.5px solid var(--g3);color:var(--g4);padding:7px 8px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;}
+.cmd-actions{border-top:1px solid var(--g2);padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;background:var(--off);}
+.cmd-actions-row2{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;padding:0 10px 8px;background:var(--off);}
+.btn-estado{width:100%;padding:8px 4px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;text-align:center;}
+.btn-pendiente{background:var(--amber-bg);color:var(--amber);border:1.5px solid var(--amber) !important;}
+.btn-lista{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green) !important;}
+.btn-entregado{background:var(--g2);color:var(--g5);border:1.5px solid var(--g3) !important;}
+.btn-imprimir{background:var(--red);color:#fff;border:none;padding:8px 4px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;width:100%;}
+.btn-editar{background:var(--blue-faint);border:1.5px solid var(--blue);color:var(--blue);padding:8px 4px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;width:100%;}
+.btn-agregar{background:var(--green-bg);border:1.5px solid var(--green);color:var(--green);padding:8px 4px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;width:100%;}
+.btn-eliminar{background:transparent;border:1.5px solid var(--g3);color:var(--g4);padding:8px 4px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;width:100%;}
 
 /* EMPTY */
 .empty-list{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--g4);gap:8px;padding:40px;}
@@ -307,7 +308,7 @@ const MENU_CAJA = [
 ];
 
 let fbUrl='', comandas={}, filter='todas';
-let btChar=null, polling=null, lastKeys=new Set();
+let polling=null, lastKeys=new Set();
 let addMenuKey=null, amTab=MENU_CAJA[0].cat, amSelV={};
 let editMode={};
 
@@ -415,12 +416,14 @@ function renderCard(key,c){
     ${c.nota?`<div class="cmd-nota">📝 ${c.nota}</div>`:''}
     ${editHtml}
     <div class="cmd-actions">
-      <button class="btn-estado btn-pendiente" onclick="setEstado('${key}','pendiente')" ${c.estado==='pendiente'?'style="opacity:1"':''}>⏳</button>
-      <button class="btn-estado btn-lista" onclick="setEstado('${key}','lista')" ${c.estado==='lista'?'style="opacity:1"':''}>✅ Lista</button>
-      <button class="btn-estado btn-entregado" onclick="setEstado('${key}','entregado')" ${c.estado==='entregado'?'style="opacity:1"':''}>🤝</button>
-      <button class="btn-editar" onclick="toggleEdit('${key}')">✏️</button>
-      <button class="btn-agregar" onclick="openAddMenu('${key}','Mesa ${c.mesa}')">+</button>
-      <button class="btn-imprimir" onclick="printTicketByKey('${key}')">🖨️</button>
+      <button class="btn-estado btn-pendiente" onclick="setEstado('${key}','pendiente')">⏳ Pendiente</button>
+      <button class="btn-estado btn-lista" onclick="setEstado('${key}','lista')">✅ Lista</button>
+      <button class="btn-estado btn-entregado" onclick="setEstado('${key}','entregado')">🤝 Entregada</button>
+    </div>
+    <div class="cmd-actions-row2">
+      <button class="btn-editar" onclick="toggleEdit('${key}')">✏️ Editar</button>
+      <button class="btn-agregar" onclick="openAddMenu('${key}','Mesa ${c.mesa}')">➕ Agregar</button>
+      <button class="btn-imprimir" onclick="printTicketByKey('${key}')">🖨️ Imprimir</button>
       <button class="btn-eliminar" onclick="eliminar('${key}')">✕</button>
     </div>
   </div>`;
@@ -603,35 +606,50 @@ function buildTicket(c){
 
 async function printTicket(c){
   const txt=buildTicket(c);
-  if(btChar){
+  // Intentar servidor WiFi primero
+  if(PRINT_SERVER && !PRINT_SERVER.includes('XXX')){
     try{
-      const enc=new TextEncoder();
-      const write=async(d)=>{if(btChar.properties.writeWithoutResponse)await btChar.writeValueWithoutResponse(d);else await btChar.writeValue(d);};
-      await write(new Uint8Array([0x1B,0x40]));
-      const bytes=enc.encode(txt);
-      for(let i=0;i<bytes.length;i+=100)await write(bytes.slice(i,i+100));
-      await write(new Uint8Array([0x1D,0x56,0x42,0x00]));
-      toast('Ticket impreso ✓');return;
-    }catch{btChar=null;}
+      const r = await fetch(PRINT_SERVER+'/print', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ticket:txt}),
+        signal: AbortSignal.timeout(5000)
+      });
+      const d = await r.json();
+      if(d.ok){ toast('🖨️ Ticket impreso ✓'); return; }
+      else { toast('Error impresora: '+d.error, true); }
+    } catch(e){
+      toast('Servidor no responde — abriendo ventana', false);
+    }
   }
+  // Fallback: ventana del navegador
   const w=window.open('','_blank','width=340,height=620');
   if(!w){toast('Permite ventanas emergentes',true);return;}
   w.document.write(`<!DOCTYPE html><html><head><title>Ticket</title><style>*{margin:0;padding:0;}body{font-family:'Courier New',monospace;font-size:12pt;line-height:1.35;padding:6mm;background:white;color:black;width:80mm;}pre{white-space:pre-wrap;word-break:break-word;}@media print{@page{size:80mm auto;margin:3mm;}body{width:auto;}}</style></head><body><pre>${txt.replace(/</g,'&lt;')}</pre><script>window.onload=()=>setTimeout(()=>window.print(),200);<\/script></body></html>`);
   w.document.close();
 }
 
+// URL del servidor puente en la PC
+let PRINT_SERVER = localStorage.getItem('rolys_print_server') || 'http://192.168.1.XXX:5000';
+
 async function connectPrinter(){
-  if(!('bluetooth' in navigator)){toast('Bluetooth no disponible en este navegador',true);return;}
+  const ip = prompt('IP de la PC con el servidor de impresión:\n(ejemplo: 192.168.1.5)', PRINT_SERVER.replace('http://','').replace(':5000',''));
+  if(!ip) return;
+  PRINT_SERVER = 'http://'+ip.trim()+':5000';
+  localStorage.setItem('rolys_print_server', PRINT_SERVER);
+  // Probar conexión
   try{
-    toast('Buscando impresora...');
-    const dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['e7810a71-73ae-499d-8c15-faa9aef0c3f2','000018f0-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb','0000fff0-0000-1000-8000-00805f9b34fb']});
-    const srv=await dev.gatt.connect();
-    const SVCS=['e7810a71-73ae-499d-8c15-faa9aef0c3f2','000018f0-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb','0000fff0-0000-1000-8000-00805f9b34fb'];
-    btChar=null;
-    for(const sid of SVCS){try{const s=await srv.getPrimaryService(sid);const cs=await s.getCharacteristics();btChar=cs.find(c=>c.properties.write||c.properties.writeWithoutResponse);if(btChar)break;}catch{}}
-    if(btChar){toast('Impresora conectada ✓');document.getElementById('connPill').textContent='🖨️ '+dev.name;}
-    else toast('Impresora encontrada pero sin canal',true);
-  }catch(e){if(e.name!=='NotFoundError')toast('Error: '+e.message,true);}
+    toast('Probando conexión...');
+    const r = await fetch(PRINT_SERVER+'/status', {signal: AbortSignal.timeout(4000)});
+    const d = await r.json();
+    if(d.ok){
+      toast('🖨️ Servidor conectado ✓');
+      document.getElementById('connPill').textContent='🖨️ Conectado';
+      document.getElementById('connPill').className='conn-pill ok';
+    }
+  } catch(e){
+    toast('No se pudo conectar al servidor. ¿Está corriendo?', true);
+  }
 }
 
 function showAlerta(c){document.getElementById('alertaSub').textContent=`Mesa ${c.mesa} · ${c.mesero||''} · $${c.total}`;document.getElementById('alertaOv').classList.add('show');}
