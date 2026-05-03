@@ -257,53 +257,37 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
 <script>
 const MENU_CAJA = [
-  {cat:"Consomé",icon:"🍵",items:[
-    {id:"c1",n:"Plato de Birria",s:"con carne",e:"🍲",v:[{l:"Chico 100g",p:99},{l:"Grande 200g",p:169}]},
-    {id:"c2",n:"Consomé",s:"sin carne",e:"🥣",v:[{l:"Chico 235ml",p:34},{l:"Grande 475ml",p:54}]}
+  {cat:"Consome", items:[
+    {id:"c1", n:"Plato de Birria con Carne", v:[{l:"Individual",p:99},{l:"Grande 200g",p:169}]},
+    {id:"c2", n:"Consome sin Carne", v:[{l:"Chico 235ml",p:34},{l:"Grande 475ml",p:54}]}
   ]},
-  {cat:"Ramen",icon:"🍜",items:[
-    {id:"r1",n:"Ramen de Birria",e:"🍜",v:[{l:"Chico 100g",p:99},{l:"Grande 200g",p:129}]},
-    {id:"r2",n:"Ramen c/Huevo",s:"duro",e:"🥚",v:[{l:"Chico 100g",p:109},{l:"Grande 200g",p:139}]}
+  {cat:"Ramen", items:[
+    {id:"r1", n:"Ramen de Birria", v:[{l:"Individual Chico",p:99},{l:"Individual Grande",p:129}]},
+    {id:"r2", n:"Ramen con Huevo Duro", v:[{l:"Individual Chico",p:109},{l:"Individual Grande",p:139}]}
   ]},
-  {cat:"Tacos",icon:"🌮",items:[
-    {id:"t1",n:"Taco Suave",s:"individual",e:"🌮",p:35},
-    {id:"t2",n:"Orden Tacos Suaves",e:"🌮",v:[{l:"3 pzas",p:109},{l:"5 pzas",p:179}]},
-    {id:"t3",n:"Tacos Dorados",s:"orden 4 pzas",e:"🌮",p:109}
+  {cat:"Tacos", items:[
+    {id:"t1", n:"Taco Suave", p:35},
+    {id:"t2", n:"Orden Tacos Suaves", v:[{l:"Orden 3",p:109},{l:"Orden 5",p:179}]},
+    {id:"t3", n:"Orden Tacos Dorados", s:"4 piezas", p:109}
   ]},
-  {cat:"Quesabirria",icon:"🧀",items:[
-    {id:"q1",n:"Quesabirria Maíz",e:"🌽",v:[{l:"Individual",p:39},{l:"3 pzas",p:119},{l:"5 pzas",p:199}]},
-    {id:"q2",n:"Quesabirria Harina",e:"🧀",v:[{l:"Individual",p:39},{l:"3 pzas",p:119},{l:"5 pzas",p:199}]},
-    {id:"q3",n:"Quesabirria Jumbo",s:"30cm",e:"🧀",p:109},
-    {id:"q4",n:"Gringa de Birria",e:"🧀",p:109}
+  {cat:"Quesabirria", items:[
+    {id:"q1", n:"Quesabirria Maiz", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
+    {id:"q2", n:"Quesabirria Harina", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
+    {id:"q3", n:"Quesabirria Jumbo Harina", s:"30cm", p:109},
+    {id:"q4", n:"Gringa de Birria", p:109}
   ]},
-  {cat:"Otros",icon:"🍽️",items:[
-    {id:"o1",n:"Orden Volcanes",s:"2 pzas",e:"🌋",p:109},
-    {id:"o2",n:"Empanadas Birria",s:"4 pzas",e:"🫓",p:129},
-    {id:"o3",n:"Empanadas Queso",s:"4 pzas",e:"🫓",p:79},
-    {id:"o4",n:"Chilaquiles",e:"🍳",v:[{l:"Sencillos",p:89},{l:"c/Huevo",p:99},{l:"c/Birria",p:149}]},
-    {id:"o5",n:"Enchiladas Birria",e:"🌯",p:159}
-  ]},
-  {cat:"Extras",icon:"✨",items:[
-    {id:"e1",n:"Guacamole",e:"🥑",p:69},
-    {id:"e2",n:"Totopos",e:"🟡",p:10},
-    {id:"e3",n:"Tostadas",s:"3 pzas",e:"🫓",p:15}
-  ]},
-  {cat:"Bebidas",icon:"🥤",items:[
-    {id:"b1",n:"Agua Fresca",e:"🥛",v:[{l:"½L",p:35},{l:"1L",p:60}]},
-    {id:"b2",n:"Coca-Cola",e:"🥤",p:35},
-    {id:"b3",n:"Coca Zero",e:"🥤",p:35},
-    {id:"b4",n:"Sprite",e:"🟢",p:35},
-    {id:"b5",n:"Mundet",e:"🍎",p:35},
-    {id:"b6",n:"Del Valle Guayaba",e:"🍹",p:35},
-    {id:"b7",n:"Del Valle Mango",e:"🥭",p:35},
-    {id:"b8",n:"Topo Chico",e:"💧",p:35},
-    {id:"b9",n:"Electrolit",s:"sabor variable",e:"⚡",p:45,electrolit:true},
-    {id:"b10",n:"Café del día",e:"☕",p:39},
-    {id:"b11",n:"Espresso",e:"☕",p:49}
-  ]},
-  {cat:"Postres",icon:"🍮",items:[
-    {id:"ps1",n:"Pan de Elote",e:"🍮",p:45},
-    {id:"ps2",n:"Malteada ½L",e:"🥤",p:60}
+  {cat:"Bebidas", items:[
+    {id:"b1", n:"Agua Fresca", v:[{l:"Medio Litro",p:35},{l:"1 Litro",p:60}]},
+    {id:"b2", n:"Coca-Cola Regular", s:"355ml", p:35},
+    {id:"b3", n:"Coca-Cola Zero", s:"355ml", p:35},
+    {id:"b4", n:"Sprite", s:"355ml", p:35},
+    {id:"b5", n:"Mundet", s:"355ml", p:35},
+    {id:"b6", n:"Del Valle Guayaba", s:"355ml", p:35},
+    {id:"b7", n:"Del Valle Mango", s:"355ml", p:35},
+    {id:"b8", n:"Topo Chico", s:"355ml", p:35},
+    {id:"b9", n:"Electrolit", s:"sabor variable", p:45, electrolit:true},
+    {id:"b10", n:"Cafe del dia", s:"300ml", p:39},
+    {id:"b11", n:"Espresso Americano", s:"300ml", p:49}
   ]}
 ];
 
@@ -574,14 +558,16 @@ async function ejecutarCorte(){
 function printTicketByKey(key){if(comandas[key])printTicket(comandas[key]);}
 
 function buildTicket(c){
-  const W=32;
+  const W=42; // 80mm ~ 42 chars
   const center=s=>' '.repeat(Math.max(0,Math.floor((W-s.length)/2)))+s;
+  const row=(l,r)=>{const sp=Math.max(1,W-l.length-r.length);return l.length+r.length>=W?l.slice(0,W-r.length-1)+' '+r:l+' '.repeat(sp)+r;};
   let L=[];
-  L.push('================================');
+  L.push('==========================================');
   L.push(center('BIRRIA ROLYS COAPA'));
-  L.push('================================');
-  L.push(`${c.hora||''}${c.mesa?' Mesa: '+c.mesa:''}${c.mesero?' | '+c.mesero:''}`);
-  L.push('--------------------------------');
+  L.push('==========================================');
+  L.push(`Fecha: ${c.fecha||''}  Hora: ${c.hora||''}`);
+  L.push(`Mesa: ${c.mesa}  Mesero: ${c.mesero||''}`);
+  L.push('------------------------------------------');
   if(c.personas&&c.personas.length){
     for(const p of c.personas){
       if(!p.items||!p.items.length)continue;
@@ -589,21 +575,17 @@ function buildTicket(c){
       for(const item of p.items){
         const nm=`${item.qty}x ${item.nombre}`;
         const pr=`$${item.subtotal}`;
-        if(nm.length+1+pr.length>W){L.push(nm.slice(0,W));L.push(' '.repeat(Math.max(0,W-pr.length))+pr);}
-        else{const sp=Math.max(1,W-nm.length-pr.length);L.push(nm+' '.repeat(sp)+pr);}
+        L.push(row(nm,pr));
         if(item.comentario)L.push(`  > ${item.comentario}`);
       }
     }
   } else if(c.items){
-    for(const item of c.items){
-      const nm=`${item.qty}x ${item.nombre}`;const pr=`$${item.subtotal}`;
-      const sp=Math.max(1,W-nm.length-pr.length);L.push(nm+' '.repeat(sp)+pr);
-    }
+    for(const item of c.items){L.push(row(`${item.qty}x ${item.nombre}`,`$${item.subtotal}`));}
   }
-  L.push('================================');
+  L.push('==========================================');
   L.push(center(`TOTAL: $${c.total}`));
-  L.push('================================');
-  if(c.nota){L.push('NOTA: '+c.nota);L.push('--------------------------------');}
+  L.push('==========================================');
+  if(c.nota){L.push('NOTA: '+c.nota);L.push('------------------------------------------');}
   L.push('');L.push('');L.push('');
   return L.join('\n');
 }
