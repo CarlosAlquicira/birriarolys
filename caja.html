@@ -246,6 +246,8 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
     <div class="corte-stat"><span class="corte-stat-lbl">Comandas cerradas</span><span class="corte-stat-val" id="corteN">0</span></div>
     <div class="corte-stat"><span class="corte-stat-lbl">Comandas pendientes</span><span class="corte-stat-val" id="corteP">0</span></div>
     <div class="corte-stat"><span class="corte-stat-lbl">Total vendido</span><span class="corte-stat-val big" id="corteTotal">$0</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">Mesas / Para llevar</span><span class="corte-stat-val" id="corteMesa" style="font-size:15px">—</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">Uber Eats</span><span class="corte-stat-val" id="corteUE" style="font-size:15px;color:#06b">—</span></div>
     <div class="corte-actions">
       <button class="btn-corte-cancel" onclick="closeCorteOv()">Cancelar</button>
       <button class="btn-corte-cerrar" onclick="ejecutarCorte()">🗑️ Cerrar día y limpiar</button>
@@ -343,6 +345,7 @@ function renderList(){
 
 function renderCard(key,c){
   const estadoClass=c.estado==='lista'?'lista':c.estado==='entregado'?'entregado':'';
+  const isUE = c.canal==='ubereats';
   // Items por persona o flat
   let itemsHtml='';
   if(c.personas&&c.personas.length){
@@ -387,7 +390,10 @@ function renderCard(key,c){
 
   return `<div class="cmd-card ${estadoClass}" id="cmd-${key}">
     <div class="cmd-hdr">
-      <div><div class="cmd-mesa">Mesa ${c.mesa}</div><div class="cmd-meta">${c.mesero||''} · ${c.hora||''}</div></div>
+      <div>
+        <div class="cmd-mesa">${isUE?'<span style="background:#06b;color:#fff;font-size:12px;padding:1px 6px;border-radius:4px;font-family:DM Sans,sans-serif;font-weight:700;vertical-align:middle;margin-right:4px;">UE</span>':''}${c.canal==='ubereats'?c.codigoUE||'UberEats':('Mesa '+(c.mesa||''))}</div>
+        <div class="cmd-meta">${c.canal==='ubereats'?(c.cliente||''):''}${c.mesero&&c.canal!=='ubereats'?' · '+c.mesero:''} · ${c.hora||''}</div>
+      </div>
       <div class="cmd-total">$${c.total}</div>
     </div>
     ${itemsHtml}
@@ -411,9 +417,12 @@ function updateStats(){
   const vals=Object.values(comandas);
   document.getElementById('stPend').textContent=vals.filter(c=>c.estado==='pendiente').length;
   document.getElementById('stList').textContent=vals.filter(c=>c.estado==='lista').length;
-  document.getElementById('stTotal').textContent='$'+vals.reduce((s,c)=>s+c.total,0);
+  const totalAll=vals.reduce((s,c)=>s+c.total,0);
+  const totalUE=vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+c.total,0);
+  const totalMesa=totalAll-totalUE;
+  document.getElementById('stTotal').textContent='$'+totalAll;
   const n=vals.length;
-  document.getElementById('hdrSub').textContent=n>0?`${n} comanda${n!==1?'s':''} hoy`:'Esperando comandas...';
+  document.getElementById('hdrSub').textContent=n>0?`${n} comandas | Mesas $${totalMesa} | UE $${totalUE}`:'Esperando comandas...';
 }
 
 async function setEstado(key,estado){
@@ -523,13 +532,20 @@ async function eliminar(key){
 function openCorte(){
   const vals=Object.values(comandas);
   const total=vals.reduce((s,c)=>s+c.total,0);
+  const totalUE=vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+c.total,0);
+  const totalMesa=vals.filter(c=>!c.canal||c.canal==='mesa').reduce((s,c)=>s+c.total,0);
   const entregadas=vals.filter(c=>c.estado==='entregado').length;
   const pendientes=vals.filter(c=>c.estado!=='entregado').length;
+  const nUE=vals.filter(c=>c.canal==='ubereats').length;
+  const nMesa=vals.filter(c=>!c.canal||c.canal==='mesa').length;
   const fecha=new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('corteFecha').textContent=fecha;
-  document.getElementById('corteN').textContent=entregadas;
+  document.getElementById('corteN').textContent=entregadas+' de '+vals.length;
   document.getElementById('corteP').textContent=pendientes;
   document.getElementById('corteTotal').textContent='$'+total;
+  // Desglose
+  document.getElementById('corteMesa').textContent=`${nMesa} comandas: $${totalMesa}`;
+  document.getElementById('corteUE').textContent=`${nUE} pedidos: $${totalUE}`;
   document.getElementById('corteOv').classList.add('show');
 }
 function closeCorteOv(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('corteOv').classList.remove('show');}
