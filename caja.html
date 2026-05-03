@@ -257,24 +257,17 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
 <script>
 const MENU_CAJA = [
-  {cat:"Consome", items:[
-    {id:"c1", n:"Plato de Birria con Carne", v:[{l:"Individual",p:99},{l:"Grande 200g",p:169}]},
-    {id:"c2", n:"Consome sin Carne", v:[{l:"Chico 235ml",p:34},{l:"Grande 475ml",p:54}]}
-  ]},
-  {cat:"Ramen", items:[
-    {id:"r1", n:"Ramen de Birria", v:[{l:"Individual Chico",p:99},{l:"Individual Grande",p:129}]},
-    {id:"r2", n:"Ramen con Huevo Duro", v:[{l:"Individual Chico",p:109},{l:"Individual Grande",p:139}]}
-  ]},
-  {cat:"Tacos", items:[
-    {id:"t1", n:"Taco Suave", p:35},
-    {id:"t2", n:"Orden Tacos Suaves", v:[{l:"Orden 3",p:109},{l:"Orden 5",p:179}]},
-    {id:"t3", n:"Orden Tacos Dorados", s:"4 piezas", p:109}
-  ]},
-  {cat:"Quesabirria", items:[
+  {cat:"Birria", items:[
+    {id:"c1", n:"Plato de Birria con Carne", v:[{l:"Chico 100g",p:99},{l:"Grande 200g",p:169}]},
+    {id:"c2", n:"Consome sin Carne", v:[{l:"Chico 300ml",p:34},{l:"Grande 500ml",p:54}]},
+    {id:"r1", n:"Ramen de Birria", v:[{l:"Chico 50g",p:99},{l:"Grande 100g",p:129}]},
+    {id:"r2", n:"Ramen de Birria con Huevo", v:[{l:"Chico 50g",p:109},{l:"Grande 100g",p:139}]},
+    {id:"t1", n:"Taco Suave", v:[{l:"Individual",p:35},{l:"Orden 3",p:109},{l:"Orden 5",p:179}]},
+    {id:"t2", n:"Orden Tacos Dorados", s:"4 piezas", p:109},
     {id:"q1", n:"Quesabirria Maiz", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
     {id:"q2", n:"Quesabirria Harina", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
-    {id:"q3", n:"Quesabirria Jumbo Harina", s:"30cm", p:109},
-    {id:"q4", n:"Gringa de Birria", p:109}
+    {id:"q3", n:"Gringa de Birria Maiz", p:109},
+    {id:"q4", n:"Gringa de Birria Harina", p:109}
   ]},
   {cat:"Bebidas", items:[
     {id:"b1", n:"Agua Fresca", v:[{l:"Medio Litro",p:35},{l:"1 Litro",p:60}]},
@@ -285,7 +278,7 @@ const MENU_CAJA = [
     {id:"b6", n:"Del Valle Guayaba", s:"355ml", p:35},
     {id:"b7", n:"Del Valle Mango", s:"355ml", p:35},
     {id:"b8", n:"Topo Chico", s:"355ml", p:35},
-    {id:"b9", n:"Electrolit", s:"sabor variable", p:45, electrolit:true},
+    {id:"b9", n:"Electrolit", s:"625ml", p:45, sabores:["Ponche de Fruta","Naranja","Limon","Uva","Mora Azul","Manzana","Maracuya"]},
     {id:"b10", n:"Cafe del dia", s:"300ml", p:39},
     {id:"b11", n:"Espresso Americano", s:"300ml", p:49}
   ]}
@@ -558,7 +551,7 @@ async function ejecutarCorte(){
 function printTicketByKey(key){if(comandas[key])printTicket(comandas[key]);}
 
 function buildTicket(c){
-  const W=42; // 80mm ~ 42 chars
+  const W=42;
   const center=s=>' '.repeat(Math.max(0,Math.floor((W-s.length)/2)))+s;
   const row=(l,r)=>{const sp=Math.max(1,W-l.length-r.length);return l.length+r.length>=W?l.slice(0,W-r.length-1)+' '+r:l+' '.repeat(sp)+r;};
   let L=[];
