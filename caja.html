@@ -189,7 +189,8 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
       <div class="hdr-sub" id="hdrSub">Esperando comandas...</div>
     </div>
     <div class="hdr-right">
-      <button class="btn-print-hdr" style="background:var(--green);" onclick="openUEModal()">
+      <div class="conn-pill" id="connPill">● Conectando</div>
+      <button class="btn-print-hdr" style="background:var(--green);border:none;" onclick="openUEModal()">
         📷 UE
       </button>
       <button class="btn-print-hdr" onclick="connectPrinter()">
@@ -317,7 +318,7 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
     <!-- INPUT FOTO -->
     <div style="text-align:center;margin-bottom:12px;">
       <div style="display:flex;gap:8px;justify-content:center;margin-bottom:4px;">
-        <button onclick="document.getElementById('uePhoto').click()" style="background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
+        <button onclick="abrirCamara()" style="background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
           📷 Camara
         </button>
         <button onclick="document.getElementById('uePhotoGal').click()" style="background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
@@ -327,7 +328,15 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
           ✏️ Manual
         </button>
       </div>
-      <input type="file" id="uePhoto" accept="image/*" capture="environment" style="display:none;" onchange="processUEPhoto(this)">
+      <!-- Video para cámara en vivo -->
+      <div id="cameraWrap" style="display:none;position:relative;margin-bottom:8px;">
+        <video id="cameraVideo" autoplay playsinline style="width:100%;border-radius:8px;max-height:200px;object-fit:cover;"></video>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+          <button onclick="capturarFoto()" style="background:var(--red);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">📸 Capturar</button>
+          <button onclick="cerrarCamara()" style="background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
+        </div>
+      </div>
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
       <input type="file" id="uePhotoGal" accept="image/*" style="display:none;" onchange="processUEPhoto(this)">
     </div>
 
@@ -1100,6 +1109,63 @@ async function registrarUE(){
     toast('Pedido UE registrado ✓');
   }catch{
     toast('Error al registrar — verifica conexión',true);
+  }
+}
+
+// ── CAMARA getUserMedia ────────────────────────────────────────────────────
+let cameraStream = null;
+
+async function abrirCamara(){
+  try{
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+    });
+    const video = document.getElementById('cameraVideo');
+    video.srcObject = cameraStream;
+    document.getElementById('cameraWrap').style.display='block';
+    document.getElementById('uePreview').style.display='none';
+  }catch(e){
+    // Si falla getUserMedia, fallback al input file
+    const inp = document.createElement('input');
+    inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+    inp.onchange = function(){ processUEPhoto(this); };
+    inp.click();
+  }
+}
+
+function capturarFoto(){
+  const video = document.getElementById('cameraVideo');
+  const canvas = document.getElementById('cameraCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  cerrarCamara();
+  // Mostrar preview
+  const preview = document.getElementById('uePreview');
+  preview.src = canvas.toDataURL('image/jpeg',0.85);
+  preview.style.display='block';
+  // Procesar OCR desde canvas
+  processUECanvas(canvas);
+}
+
+function cerrarCamara(){
+  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+  document.getElementById('cameraWrap').style.display='none';
+}
+
+async function processUECanvas(canvas){
+  const status = document.getElementById('ueStatus');
+  status.style.display='block';
+  status.textContent='Procesando imagen...';
+  try{
+    if(!window.Tesseract) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js');
+    const result = await Tesseract.recognize(canvas,'spa',{
+      logger:m=>{ if(m.status==='recognizing text') status.textContent='Leyendo... '+(m.progress*100).toFixed(0)+'%'; }
+    });
+    parseUETicket(result.data.text);
+  }catch(e){
+    status.textContent='No se pudo leer. Ingresa manual.';
+    showUEForm('','','','',new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));
   }
 }
 
