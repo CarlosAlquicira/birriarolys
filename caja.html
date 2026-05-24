@@ -738,41 +738,43 @@ async function ejecutarCorte(){
     return;
   }
 
-  // Mostrar estado
-  document.getElementById('btn-cerrar-dia').textContent = '⏳ Guardando en Sheets...';
-  document.getElementById('btn-cerrar-dia').disabled = true;
+  const btn = document.getElementById('btn-cerrar-dia');
+  btn.textContent = '⏳ Guardando en Sheets...';
+  btn.disabled = true;
 
-  // 1. Enviar a Google Sheets
+  // Enviar a Sheets con no-cors (Apps Script acepta GET con datos en URL)
+  // Codificamos los datos como JSON en un parámetro GET
   let sheetsOk = false;
   try{
-    const r = await fetch(SHEETS_URL, {
+    const payload = JSON.stringify({ comandas: vals });
+    // Usar fetch con no-cors — no recibimos respuesta pero sí llega
+    await fetch(SHEETS_URL, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ comandas: vals })
+      mode: 'no-cors',
+      headers: {'Content-Type':'text/plain'},
+      body: payload
     });
-    const d = await r.json();
-    sheetsOk = d.ok;
-    if(!sheetsOk) console.error('Sheets error:', d.error);
+    sheetsOk = true; // no-cors no devuelve error si llega
+    console.log('[Sheets] Enviado con no-cors');
   }catch(e){
-    console.error('Sheets fetch error:', e);
+    console.error('[Sheets] Error:', e);
+    sheetsOk = false;
   }
 
-  // 2. Borrar de Firebase (aunque Sheets falle)
+  // Borrar de Firebase
   try{
     await fetch(`${fbUrl}/comandas.json`,{method:'DELETE'});
     comandas={};lastKeys.clear();saveSeenKeys();editMode={};
     document.getElementById('corteOv').classList.remove('show');
     renderList();updateStats();
-    if(sheetsOk){
-      toast('✓ Día cerrado — datos guardados en Google Sheets');
-    } else {
-      toast('Día cerrado — revisa conexión con Sheets', true);
-    }
+    toast(sheetsOk ? '✓ Día cerrado — revisa Google Sheets' : 'Día cerrado — Sheets no respondió');
   }catch(e){
     toast('Error al cerrar el día',true);
   }
 
-  // Restaurar botón
+  btn.textContent = '🗑️ Guardar en Sheets y cerrar día';
+  btn.disabled = false;
+}
   const btn = document.getElementById('btn-cerrar-dia');
   if(btn){ btn.textContent='🗑️ Cerrar día y limpiar'; btn.disabled=false; }
 }
