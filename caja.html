@@ -316,10 +316,19 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
     <!-- INPUT FOTO -->
     <div style="text-align:center;margin-bottom:12px;">
-      <label for="uePhoto" style="display:inline-block;background:var(--green);color:#fff;padding:10px 20px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
-        📷 Tomar / Subir foto
-      </label>
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:4px;">
+        <button onclick="document.getElementById('uePhoto').click()" style="background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
+          📷 Camara
+        </button>
+        <button onclick="document.getElementById('uePhotoGal').click()" style="background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
+          🖼️ Galeria
+        </button>
+        <button onclick="showUEForm('','','','',new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}))" style="background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
+          ✏️ Manual
+        </button>
+      </div>
       <input type="file" id="uePhoto" accept="image/*" capture="environment" style="display:none;" onchange="processUEPhoto(this)">
+      <input type="file" id="uePhotoGal" accept="image/*" style="display:none;" onchange="processUEPhoto(this)">
     </div>
 
     <!-- PREVIEW -->
@@ -409,7 +418,14 @@ function entrar(){
 }
 window.addEventListener('load',()=>{
   const f=localStorage.getItem('rolys_caja_fb');
-  if(f)document.getElementById('fbUrl').value=f;
+  if(f){
+    document.getElementById('fbUrl').value=f;
+    // Auto-entrar si ya tenía URL guardada
+    fbUrl=f;
+    document.getElementById('setup').style.display='none';
+    document.getElementById('app').style.display='flex';
+    startPolling();
+  }
 });
 
 function startPolling(){poll();polling=setInterval(poll,3000);}
