@@ -246,89 +246,86 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
 <!-- CORTE MODAL -->
 <div class="corte-ov" id="corteOv" onclick="closeCorteOv(event)">
-  <div class="corte-box">
+  <div class="corte-box" style="max-width:360px;">
     <div class="corte-title">📊 Corte del Día</div>
     <div class="corte-fecha" id="corteFecha"></div>
     <div class="corte-stat"><span class="corte-stat-lbl">Comandas cerradas</span><span class="corte-stat-val" id="corteN">0</span></div>
-    <div class="corte-stat"><span class="corte-stat-lbl">Comandas pendientes</span><span class="corte-stat-val" id="corteP">0</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">Pendientes</span><span class="corte-stat-val" id="corteP">0</span></div>
     <div class="corte-stat"><span class="corte-stat-lbl">Total vendido</span><span class="corte-stat-val big" id="corteTotal">$0</span></div>
-    <div class="corte-stat"><span class="corte-stat-lbl">Mesas / Para llevar</span><span class="corte-stat-val" id="corteMesa" style="font-size:15px">—</span></div>
-    <div class="corte-stat"><span class="corte-stat-lbl">Uber Eats</span><span class="corte-stat-val" id="corteUE" style="font-size:15px;color:#06b">—</span></div>
-    <div class="corte-actions">
-      <button class="btn-corte-cancel" onclick="closeCorteOv()">Cancelar</button>
-      <button class="btn-corte-cerrar" id="btn-cerrar-dia" onclick="ejecutarCorte()">🗑️ Cerrar día y limpiar</button>
+    <div class="corte-stat"><span class="corte-stat-lbl">Mesas / Para llevar</span><span class="corte-stat-val" id="corteMesa" style="font-size:14px">—</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">Uber Eats</span><span class="corte-stat-val" id="corteUE" style="font-size:14px;color:var(--blue)">—</span></div>
+    <!-- Top productos -->
+    <div id="corteProductos" style="margin-top:8px;padding:10px;background:var(--g1);border-radius:8px;font-size:11px;display:none;">
+      <div style="font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Productos vendidos</div>
+      <div id="corteProductosList"></div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+      <button class="btn-corte-cancel" onclick="closeCorteOv()">Cancelar</button>
+      <button style="background:var(--blue);border:none;color:#fff;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;" onclick="imprimirCorte()">🖨️ Imprimir corte</button>
+    </div>
+    <button class="btn-corte-cerrar" id="btn-cerrar-dia" onclick="ejecutarCorte()" style="width:100%;margin-top:8px;">🗑️ Guardar en Sheets y cerrar día</button>
   </div>
 </div>
 
 <!-- MODAL UBER EATS -->
 <div class="corte-ov" id="ueOv" onclick="closeUEOv(event)">
-  <div class="corte-box" style="max-width:380px;">
-    <div class="corte-title" style="color:var(--green);font-size:18px;">📷 Registrar Uber Eats</div>
-    <p style="font-size:12px;color:var(--g4);text-align:center;margin:8px 0 14px;">Toma foto al ticket de Uber Eats o súbelo desde tu galería</p>
+  <div class="corte-box" style="max-width:400px;max-height:90dvh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="corte-title" style="font-size:17px;color:var(--green);">Registrar Uber Eats</div>
+      <button onclick="closeUEOv()" style="background:var(--g1);border:1px solid var(--g2);border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--g4);margin-bottom:12px;">Sube el ticket desde galeria o captura manual</p>
 
-    <!-- INPUT FOTO -->
-    <div style="text-align:center;margin-bottom:12px;">
-      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:4px;">
-        <button onclick="abrirCamara()" style="background:var(--green);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
-          📷 Camara
-        </button>
-        <button onclick="document.getElementById('uePhotoGal').click()" style="background:var(--blue);color:#fff;border:none;padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
-          🖼️ Galeria
-        </button>
-        <button onclick="showUEForm('','','','',new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}))" style="background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:10px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;">
-          ✏️ Manual
-        </button>
-      </div>
-      <!-- Video para cámara en vivo -->
-      <div id="cameraWrap" style="display:none;position:relative;margin-bottom:8px;">
-        <video id="cameraVideo" autoplay playsinline style="width:100%;border-radius:8px;max-height:200px;object-fit:cover;"></video>
-        <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
-          <button onclick="capturarFoto()" style="background:var(--red);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">📸 Capturar</button>
-          <button onclick="cerrarCamara()" style="background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;">Cancelar</button>
-        </div>
-      </div>
-      <canvas id="cameraCanvas" style="display:none;"></canvas>
-      <input type="file" id="uePhotoGal" accept="image/*" style="display:none;" onchange="processUEPhoto(this)">
+    <!-- BOTONES -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <button onclick="document.getElementById('uePhotoGal').click()" style="background:var(--blue);color:#fff;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
+        🖼️ Subir foto
+      </button>
+      <button onclick="showUEForm('','','','',new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}))" style="background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
+        ✏️ Captura manual
+      </button>
     </div>
 
-    <!-- PREVIEW -->
-    <img id="uePreview" style="display:none;width:100%;border-radius:8px;margin-bottom:12px;max-height:200px;object-fit:contain;border:1px solid var(--g2);">
+    <input type="file" id="uePhotoGal" accept="image/*" style="display:none;" onchange="processUEPhoto(this)">
 
-    <!-- RESULTADO EDITABLE -->
+    <!-- STATUS -->
+    <div id="ueStatus" style="text-align:center;font-size:12px;color:var(--g4);padding:6px 0;display:none;"></div>
+
+    <!-- PREVIEW -->
+    <img id="uePreview" style="display:none;width:100%;border-radius:8px;margin-bottom:10px;max-height:160px;object-fit:contain;border:1px solid var(--g2);">
+
+    <!-- FORMULARIO -->
     <div id="ueResult" style="display:none;">
-      <div style="font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;margin-bottom:6px;">Datos detectados — revisa y confirma</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <div style="flex:1;">
+      <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Datos del pedido — revisa y edita si es necesario</div>
+      <div style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:8px;">
+        <div>
           <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Cliente</label>
-          <input id="ueCliente" type="text" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:6px 8px;font-size:13px;outline:none;">
+          <input id="ueCliente" type="text" placeholder="Nombre cliente" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
         </div>
-        <div style="width:80px;">
+        <div>
           <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Codigo UE</label>
-          <input id="ueCodigo" type="text" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:6px 8px;font-size:13px;outline:none;">
+          <input id="ueCodigo" type="text" placeholder="EJ: A2097" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
         </div>
       </div>
       <div style="margin-bottom:8px;">
-        <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Productos (uno por línea: 2x Ramen de Birria $198)</label>
-        <textarea id="ueItems" rows="4" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:6px 8px;font-size:12px;font-family:monospace;resize:none;outline:none;"></textarea>
+        <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Productos (uno por linea: 1x Ramen de Birria $179)</label>
+        <textarea id="ueItems" rows="4" placeholder="1x Producto $precio" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:12px;font-family:monospace;resize:none;outline:none;"></textarea>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div style="flex:1;">
-          <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Total</label>
-          <input id="ueTotal" type="number" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:6px 8px;font-size:13px;outline:none;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div>
+          <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Total $</label>
+          <input id="ueTotal" type="number" placeholder="462" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:14px;font-weight:700;color:var(--red);outline:none;font-family:inherit;">
         </div>
-        <div style="flex:1;">
+        <div>
           <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Hora</label>
-          <input id="ueHora" type="text" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:6px 8px;font-size:13px;outline:none;">
+          <input id="ueHora" type="text" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
         </div>
       </div>
-      <div class="corte-actions" style="margin-top:0;">
-        <button class="btn-corte-cancel" onclick="closeUEOv()">Cancelar</button>
-        <button class="btn-corte-cerrar" style="background:var(--green);" onclick="registrarUE()">✓ Registrar pedido</button>
+      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:8px;">
+        <button onclick="closeUEOv()" style="background:var(--g1);border:1.5px solid var(--g3);color:var(--g5);padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+        <button onclick="registrarUE()" style="background:var(--green);border:none;color:#fff;padding:10px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">✓ Registrar pedido</button>
       </div>
     </div>
-
-    <div id="ueStatus" style="text-align:center;font-size:12px;color:var(--g4);padding:8px 0;display:none;"></div>
   </div>
 </div>
 
@@ -627,10 +624,106 @@ function openCorte(){
   document.getElementById('corteN').textContent=entregadas+' de '+vals.length;
   document.getElementById('corteP').textContent=pendientes;
   document.getElementById('corteTotal').textContent='$'+total;
-  // Desglose
   document.getElementById('corteMesa').textContent=`${nMesa} comandas: $${totalMesa}`;
   document.getElementById('corteUE').textContent=`${nUE} pedidos: $${totalUE}`;
+
+  // Desglose por producto
+  const prodMap={};
+  vals.forEach(c=>{
+    (c.personas||[]).forEach(p=>{
+      (p.items||[]).forEach(item=>{
+        const k=item.nombre||'';
+        if(!prodMap[k])prodMap[k]={qty:0,total:0};
+        prodMap[k].qty+=item.qty||1;
+        prodMap[k].total+=item.subtotal||0;
+      });
+    });
+    (c.items||[]).forEach(item=>{
+      const k=item.nombre||'';
+      if(!prodMap[k])prodMap[k]={qty:0,total:0};
+      prodMap[k].qty+=item.qty||1;
+      prodMap[k].total+=item.subtotal||0;
+    });
+  });
+  const sorted=Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty);
+  const prodEl=document.getElementById('corteProductos');
+  const listEl=document.getElementById('corteProductosList');
+  if(sorted.length&&prodEl&&listEl){
+    prodEl.style.display='block';
+    listEl.innerHTML=sorted.map(([nombre,d])=>
+      `<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--g2);">
+        <span style="color:var(--g5);">${d.qty}x ${nombre}</span>
+        <span style="color:var(--red);font-weight:600;">$${d.total}</span>
+      </div>`
+    ).join('');
+  }
   document.getElementById('corteOv').classList.add('show');
+}
+
+function buildCorteTicket(){
+  const vals=Object.values(comandas);
+  const total=vals.reduce((s,c)=>s+c.total,0);
+  const totalUE=vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+c.total,0);
+  const totalMesa=total-totalUE;
+  const fecha=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const W=42;
+  const center=s=>' '.repeat(Math.max(0,Math.floor((W-s.length)/2)))+s;
+  const row=(l,r)=>{const sp=Math.max(1,W-l.length-r.length);return l.length+r.length>=W?l.slice(0,W-r.length-1)+' '+r:l+' '.repeat(sp)+r;};
+
+  const prodMap={};
+  vals.forEach(c=>{
+    (c.personas||[]).forEach(p=>(p.items||[]).forEach(item=>{
+      const k=item.nombre||'';
+      if(!prodMap[k])prodMap[k]={qty:0,total:0};
+      prodMap[k].qty+=item.qty||1; prodMap[k].total+=item.subtotal||0;
+    }));
+    (c.items||[]).forEach(item=>{
+      const k=item.nombre||'';
+      if(!prodMap[k])prodMap[k]={qty:0,total:0};
+      prodMap[k].qty+=item.qty||1; prodMap[k].total+=item.subtotal||0;
+    });
+  });
+
+  let L=[];
+  L.push('==========================================');
+  L.push(center('BIRRIA ROLYS COAPA'));
+  L.push(center('CORTE DEL DIA'));
+  L.push('==========================================');
+  L.push(`Fecha: ${fecha}   Hora: ${hora}`);
+  L.push('------------------------------------------');
+  L.push('VENTAS POR CANAL:');
+  L.push(row('  Mesas / Para llevar','$'+totalMesa));
+  L.push(row('  Uber Eats','$'+totalUE));
+  L.push('------------------------------------------');
+  L.push('PRODUCTOS VENDIDOS:');
+  Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty).forEach(([nombre,d])=>{
+    const nm=`  ${d.qty}x ${nombre}`.slice(0,W-8);
+    L.push(row(nm,'$'+d.total));
+  });
+  L.push('==========================================');
+  L.push(center('TOTAL: $'+total));
+  L.push('==========================================');
+  L.push(''); L.push(''); L.push('');
+  return L.join('\n');
+}
+
+async function imprimirCorte(){
+  const txt=buildCorteTicket();
+  const ps=localStorage.getItem('rolys_print_server')||'';
+  if(ps&&!ps.includes('XXX')){
+    try{
+      const r=await fetch(ps+'/print',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticket:txt})});
+      const d=await r.json();
+      if(d.ok){toast('Corte impreso ✓');return;}
+    }catch{}
+  }
+  // Fallback ventana
+  const w=window.open('','_blank','width=340,height=700');
+  if(!w){toast('Permite ventanas emergentes',true);return;}
+  w.document.write(`<!DOCTYPE html><html><head><title>Corte</title><style>*{margin:0;padding:0;}body{font-family:'Courier New',monospace;font-size:12pt;line-height:1.35;padding:6mm;background:white;color:black;width:80mm;}pre{white-space:pre-wrap;word-break:break-word;}@media print{@page{size:80mm auto;margin:3mm;}body{width:auto;}}</style></head><body><pre>${txt.replace(/</g,'&lt;')}</pre><script>window.onload=()=>setTimeout(()=>window.print(),200);<\/script></body></html>`);
+  w.document.close();
+  toast('Abriendo impresión del corte...');
 }
 function closeCorteOv(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('corteOv').classList.remove('show');}
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwx78hpXgSCvv8iEXFg1wSkgk9rpNTn0Evijp-C2Cettw4eIEg3hyf1Wu0dHsfoggwv/exec';
@@ -777,22 +870,18 @@ function playBeep(){try{const ctx=new(window.AudioContext||window.webkitAudioCon
 
 // ── UBER EATS MODAL ────────────────────────────────────────────────────────
 function openUEModal(){
-  // Reset modal state
   document.getElementById('ueResult').style.display='none';
   document.getElementById('uePreview').style.display='none';
   document.getElementById('ueStatus').style.display='none';
-  document.getElementById('cameraWrap').style.display='none';
   document.getElementById('ueCliente').value='';
   document.getElementById('ueCodigo').value='';
-  if(document.getElementById('ueItems')) document.getElementById('ueItems').value='';
-  if(document.getElementById('ueTotal')) document.getElementById('ueTotal').value='';
+  document.getElementById('ueItems').value='';
+  document.getElementById('ueTotal').value='';
   document.getElementById('ueHora').value=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-  cerrarCamara();
   document.getElementById('ueOv').classList.add('show');
 }
 function closeUEOv(e){
   if(e&&e.target!==e.currentTarget)return;
-  cerrarCamara();
   document.getElementById('ueOv').classList.remove('show');
 }
 
@@ -1018,62 +1107,6 @@ async function registrarUE(){
   }
 }
 
-// ── CAMARA getUserMedia ────────────────────────────────────────────────────
-let cameraStream = null;
-
-async function abrirCamara(){
-  try{
-    cameraStream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
-    });
-    const video = document.getElementById('cameraVideo');
-    video.srcObject = cameraStream;
-    document.getElementById('cameraWrap').style.display='block';
-    document.getElementById('uePreview').style.display='none';
-  }catch(e){
-    // Si falla getUserMedia, fallback al input file
-    const inp = document.createElement('input');
-    inp.type='file'; inp.accept='image/*'; inp.capture='environment';
-    inp.onchange = function(){ processUEPhoto(this); };
-    inp.click();
-  }
-}
-
-function capturarFoto(){
-  const video = document.getElementById('cameraVideo');
-  const canvas = document.getElementById('cameraCanvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video,0,0);
-  cerrarCamara();
-  // Mostrar preview
-  const preview = document.getElementById('uePreview');
-  preview.src = canvas.toDataURL('image/jpeg',0.85);
-  preview.style.display='block';
-  // Procesar OCR desde canvas
-  processUECanvas(canvas);
-}
-
-function cerrarCamara(){
-  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
-  document.getElementById('cameraWrap').style.display='none';
-}
-
-async function processUECanvas(canvas){
-  const status = document.getElementById('ueStatus');
-  status.style.display='block';
-  status.textContent='Procesando imagen...';
-  try{
-    if(!window.Tesseract) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js');
-    const result = await Tesseract.recognize(canvas,'spa',{
-      logger:m=>{ if(m.status==='recognizing text') status.textContent='Leyendo... '+(m.progress*100).toFixed(0)+'%'; }
-    });
-    parseUETicket(result.data.text);
-  }catch(e){
-    status.textContent='No se pudo leer. Ingresa manual.';
-    showUEForm('','','','',new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));
-  }
-}
 
 function loadScript(src){
   return new Promise(function(resolve,reject){
