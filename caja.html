@@ -263,54 +263,6 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
 <!-- MODAL UBER EATS -->
 <div class="corte-ov" id="ueOv" onclick="closeUEOv(event)">
-  <div class="corte-box" style="max-height:90dvh;overflow-y:auto;width:calc(100% - 32px);max-width:400px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div>
-        <div class="corte-title" style="font-size:18px;text-align:left;">🛵 Pedido Uber Eats</div>
-        <div style="font-size:11px;color:var(--g4);margin-top:2px;">Captura el pedido que ves en Uber Eats</div>
-      </div>
-      <button onclick="closeUEOv()" style="background:var(--g1);border:1px solid var(--g2);color:var(--g5);border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer;">✕</button>
-    </div>
-
-    <!-- Cliente y código -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-      <div>
-        <label style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;display:block;margin-bottom:4px;">Cliente</label>
-        <input id="ueCliente" type="text" placeholder="Nombre cliente" style="width:100%;border:1.5px solid var(--g2);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit;outline:none;">
-      </div>
-      <div>
-        <label style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;display:block;margin-bottom:4px;">Código UE</label>
-        <input id="ueCodigo" type="text" placeholder="Ej: 0F8BE" style="width:100%;border:1.5px solid var(--g2);border-radius:7px;padding:7px 9px;font-size:13px;font-family:inherit;outline:none;text-transform:uppercase;">
-      </div>
-    </div>
-
-    <!-- Tabs menú -->
-    <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;margin-bottom:6px;">Productos del pedido</div>
-    <div class="am-tabs" id="ueTabs"></div>
-    <div class="am-grid" id="ueGrid" style="max-height:240px;overflow-y:auto;"></div>
-
-    <!-- Items seleccionados -->
-    <div id="ueItemsWrap" style="margin-top:10px;display:none;">
-      <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;margin-bottom:6px;">En este pedido</div>
-      <div id="ueItemsList"></div>
-    </div>
-
-    <!-- Total y enviar -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--g2);">
-      <div>
-        <div style="font-size:10px;color:var(--g4);text-transform:uppercase;font-weight:700;">Total</div>
-        <div id="ueTotalDisplay" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--red);">$0</div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="limpiarUE()" style="background:#fff;border:1.5px solid var(--red);color:var(--red);padding:9px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Limpiar</button>
-        <button onclick="enviarUE()" style="background:var(--green);border:none;color:#fff;padding:9px 18px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Registrar pedido</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL UBER EATS POR FOTO -->
-<div class="corte-ov" id="ueOv" onclick="closeUEOv(event)">
   <div class="corte-box" style="max-width:380px;">
     <div class="corte-title" style="color:var(--green);font-size:18px;">📷 Registrar Uber Eats</div>
     <p style="font-size:12px;color:var(--g4);text-align:center;margin:8px 0 14px;">Toma foto al ticket de Uber Eats o súbelo desde tu galería</p>
@@ -822,153 +774,25 @@ function closeAlerta(){document.getElementById('alertaOv').classList.remove('sho
 function playBeep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);o.start();o.stop(ctx.currentTime+0.4);}catch{}}
 
 // ── UBER EATS MANUAL ────────────────────────────────────────────────────
-var uePedido = {}; // lineaKey -> {id, vLabel, precio, qty, nombre}
-var ueLC = 0;
-var ueTab = MENU_CAJA[0].cat;
-var ueSelV = {};
 
-function openUEModal() {
-  uePedido = {}; ueLC = 0;
-  document.getElementById('ueCliente').value = '';
-  document.getElementById('ueCodigo').value = '';
-  renderUETabs(); renderUEGrid(); renderUEItems();
-  document.getElementById('ueOv').classList.add('show');
-}
-function closeUEOv(e) {
-  if (e && e.target !== e.currentTarget) return;
-  document.getElementById('ueOv').classList.remove('show');
-}
-
-function renderUETabs() {
-  document.getElementById('ueTabs').innerHTML = MENU_CAJA.map(c =>
-    `<button class="amtab ${c.cat===ueTab?'active':''}" onclick="setUETab('${c.cat}')">${c.cat}</button>`
-  ).join('');
-}
-function setUETab(c) { ueTab = c; renderUETabs(); renderUEGrid(); }
-
-function renderUEGrid() {
-  const cat = MENU_CAJA.find(c => c.cat === ueTab); if (!cat) return;
-  document.getElementById('ueGrid').innerHTML = cat.items.map(item => {
-    const sel = ueSelV[item.id] ?? 0;
-    let bottom = '';
-    if (item.v) {
-      const chips = item.v.map((v,i) =>
-        `<span class="am-vchip ${i===sel?'on':''}" onclick="event.stopPropagation();setUEV('${item.id}',${i})">${v.l}</span>`
-      ).join('');
-      bottom = `<div class="am-vchips">${chips}</div>`;
-    } else if (item.sabores) {
-      const selS = ueSelV['s_'+item.id] ?? 0;
-      const chips = item.sabores.map((s,i) =>
-        `<span class="am-vchip ${i===selS?'on':''}" onclick="event.stopPropagation();setUESabor('${item.id}',${i})">${s}</span>`
-      ).join('');
-      bottom = `<div class="am-vchips">${chips}</div><div class="am-card-price">$${item.p}</div>`;
-    } else {
-      bottom = `<div class="am-card-price">$${item.p}</div>`;
-    }
-    return `<div class="am-card" onclick="addUEItem('${item.id}')">
-      <div class="am-card-name">${item.n}</div>
-      ${item.s ? `<div class="am-card-sub">${item.s}</div>` : ''}
-      ${bottom}
-    </div>`;
-  }).join('');
-}
-function setUEV(id, i) { ueSelV[id] = i; renderUEGrid(); }
-function setUESabor(id, i) { ueSelV['s_'+id] = i; renderUEGrid(); }
-
-function addUEItem(itemId) {
-  const item = MENU_CAJA.flatMap(c => c.items).find(i => i.id === itemId);
-  if (!item) return;
-  let precio, vLabel;
-  if (item.v) { const v = item.v[ueSelV[itemId]??0]; precio = v.p; vLabel = v.l; }
-  else if (item.sabores) { const s = item.sabores[ueSelV['s_'+itemId]??0]; precio = item.p; vLabel = s; }
-  else { precio = item.p; vLabel = null; }
-  const nombre = item.n + (vLabel ? ' ' + vLabel : '');
-  const key = item.sabores ? null : Object.keys(uePedido).find(k => uePedido[k].id===itemId && uePedido[k].vLabel===vLabel);
-  if (key) uePedido[key].qty++;
-  else uePedido[`u${++ueLC}`] = { id: itemId, vLabel, precio, qty: 1, nombre };
-  renderUEItems();
-  if (navigator.vibrate) navigator.vibrate(20);
-}
-
-function renderUEItems() {
-  const lines = Object.entries(uePedido);
-  const wrap = document.getElementById('ueItemsWrap');
-  const list = document.getElementById('ueItemsList');
-  if (!lines.length) { wrap.style.display = 'none'; document.getElementById('ueTotalDisplay').textContent = '$0'; return; }
-  wrap.style.display = 'block';
-  let total = 0;
-  list.innerHTML = lines.map(([k,l]) => {
-    total += l.precio * l.qty;
-    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--g2);">
-      <div style="display:flex;align-items:center;background:var(--g1);border:1.5px solid var(--g2);border-radius:7px;overflow:hidden;flex-shrink:0;">
-        <button onclick="ueChQty('${k}',-1)" style="width:26px;height:26px;background:transparent;border:none;font-size:16px;font-weight:700;cursor:pointer;color:var(--red);">−</button>
-        <span style="font-family:'Bebas Neue',sans-serif;font-size:17px;min-width:20px;text-align:center;border-left:1px solid var(--g2);border-right:1px solid var(--g2);height:26px;display:flex;align-items:center;justify-content:center;">${l.qty}</span>
-        <button onclick="ueChQty('${k}',1)" style="width:26px;height:26px;background:transparent;border:none;font-size:16px;font-weight:700;cursor:pointer;color:var(--red);">+</button>
-      </div>
-      <span style="flex:1;font-size:12px;font-weight:600;">${l.nombre}</span>
-      <span style="font-size:13px;font-weight:700;color:var(--red);white-space:nowrap;">$${l.precio*l.qty}</span>
-    </div>`;
-  }).join('');
-  document.getElementById('ueTotalDisplay').textContent = '$' + total;
-}
-
-function ueChQty(k, d) {
-  uePedido[k].qty += d;
-  if (uePedido[k].qty <= 0) delete uePedido[k];
-  renderUEItems();
-}
-
-function limpiarUE() {
-  uePedido = {}; ueLC = 0;
-  document.getElementById('ueCliente').value = '';
-  document.getElementById('ueCodigo').value = '';
-  renderUEItems();
-}
-
-async function enviarUE() {
-  const lines = Object.values(uePedido);
-  if (!lines.length) { toast('Agrega productos primero', true); return; }
-  const cliente = document.getElementById('ueCliente').value.trim() || 'Cliente UE';
-  const codigo = document.getElementById('ueCodigo').value.trim().toUpperCase() || ('UE' + Date.now().toString().slice(-4));
-  const total = lines.reduce((s,l) => s + l.precio * l.qty, 0);
-  const now = new Date();
-  const comanda = {
-    mesa: 'Uber Eats', mesero: 'Caja',
-    cliente, codigoUE: codigo, canal: 'ubereats',
-    hora: now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
-    fecha: now.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'}),
-    timestamp: Date.now(), total, nota: '',
-    personas: [{ nombre: cliente, items: lines.map(l => ({nombre:l.nombre,qty:l.qty,precio:l.precio,subtotal:l.precio*l.qty,comentario:''})) }],
-    estado: 'pendiente'
-  };
-  try {
-    const r = await fetch(`${fbUrl}/comandas.json`, {
-      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(comanda)
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    // Imprimir automático
-    const txt = buildTicket(comanda);
-    if (PRINT_SERVER && !PRINT_SERVER.includes('XXX')) {
-      fetch(PRINT_SERVER + '/print', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ticket:txt}) }).catch(()=>{});
-    }
-    toast('Pedido UE registrado ✓');
-    document.getElementById('ueOv').classList.remove('show');
-    limpiarUE();
-  } catch(e) {
-    toast('Error al registrar: ' + e.message, true);
-  }
-}
-
-// ── UBER EATS POR FOTO ─────────────────────────────────────────────────────
+// ── UBER EATS MODAL ────────────────────────────────────────────────────────
 function openUEModal(){
-  document.getElementById('ueOv').classList.add('show');
+  // Reset modal state
   document.getElementById('ueResult').style.display='none';
   document.getElementById('uePreview').style.display='none';
   document.getElementById('ueStatus').style.display='none';
-  document.getElementById('uePhoto').value='';
+  document.getElementById('cameraWrap').style.display='none';
+  document.getElementById('ueCliente').value='';
+  document.getElementById('ueCodigo').value='';
+  if(document.getElementById('ueItems')) document.getElementById('ueItems').value='';
+  if(document.getElementById('ueTotal')) document.getElementById('ueTotal').value='';
+  document.getElementById('ueHora').value=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  cerrarCamara();
+  document.getElementById('ueOv').classList.add('show');
 }
 function closeUEOv(e){
   if(e&&e.target!==e.currentTarget)return;
+  cerrarCamara();
   document.getElementById('ueOv').classList.remove('show');
 }
 
