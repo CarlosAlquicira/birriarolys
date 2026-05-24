@@ -840,100 +840,114 @@ async function processUEPhoto(input){
 function parseUETicket(text){
   const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
 
+  // Normalizar: quitar MX$ → $, puntos de miles
+  const normText = text.replace(/MX\$/g,'$').replace(/(\d)\.(\d{3})/g,'$1$2');
+  const normLines = normText.split('\n').map(l=>l.trim()).filter(Boolean);
+
+  const skipWords = ['MXN','UBER','EATS','ENTREGA','SUBTOTAL','IMPORTE','FECHA','HORA',
+    'PREVISTO','GRACIAS','ARTÍCULO','ARTICULO','PERSONALIZA','SELECCIONA','ELIGE',
+    'NUEVO','CLIENTE','ANTOJO','NO','AM','PM','ALGO'];
+
   // ── CÓDIGO UE ──
-  // En tus tickets aparece como "9D110" — alfanumérico de 4-6 chars
-  // Suele estar en las primeras líneas después de "Uber Eats"
+  // Primera línea alfanumérica corta después de "Uber Eats"
   let codigo = '';
-  const skipWords = ['MXN','UBER','EATS','ENTREGA','SUBTOTAL','IMPORTE','FECHA','HORA','PREVISTO','GRACIAS','ARTÍCULO','ARTICULO','PERSONALIZA','SELECCIONA','ELIGE','NO','AM','PM'];
-  for(let i=0; i<Math.min(lines.length,8); i++){
-    const l = lines[i];
+  for(let i=0; i<Math.min(normLines.length,6); i++){
+    const l = normLines[i];
     if(/^[A-Z0-9]{4,6}$/.test(l) && !skipWords.includes(l)){
-      codigo = l;
-      break;
+      codigo = l; break;
     }
   }
 
   // ── CLIENTE ──
-  // Línea después del código, o primera línea que parece nombre
+  // Línea inmediatamente después del código
   let cliente = '';
-  const codigoIdx = lines.indexOf(codigo);
-  // Intentar línea justo después del código
-  if(codigoIdx >= 0 && codigoIdx+1 < lines.length){
-    const candidate = lines[codigoIdx+1];
-    if(candidate.length > 1 && !candidate.includes('$') && !candidate.includes(':') && !/^\d/.test(candidate)){
-      cliente = candidate;
-    }
-  }
-  // Si no, buscar primera línea que parece nombre propio
-  if(!cliente){
-    for(const l of lines){
-      if(l.length > 2 && l.length < 40 &&
+  const codigoIdx = normLines.findIndex(l=>l===codigo);
+  if(codigoIdx >= 0){
+    for(let i=codigoIdx+1; i<Math.min(normLines.length, codigoIdx+4); i++){
+      const l = normLines[i];
+      // Debe parecer nombre: tiene letras, no tiene $ ni :, no es palabra clave
+      if(l.length > 2 && l.length < 50 &&
          !l.includes('$') && !l.includes(':') &&
-         !/^\d/.test(l) &&
-         !skipWords.some(w => l.toUpperCase().includes(w)) &&
+         !skipWords.some(w => l.toUpperCase().startsWith(w)) &&
          /[A-Za-záéíóúüñÁÉÍÓÚÜÑ]/.test(l)){
-        cliente = l;
-        break;
+        cliente = l; break;
       }
     }
   }
 
   // ── PRODUCTOS ──
-  // Solo líneas con "Nx Nombre $XXX.00" donde precio > 0
-  // Ignorar modificadores a $0.00 y líneas de sección en mayúsculas
+  // Líneas con "N x Nombre" y precio MX$XXX o $XXX mayor a 0
+  // El ticket UE a veces tiene el producto en dos líneas: "1 x Orden de\nQuesabirrias (3)"
   const itemLines = [];
-  for(let i=0; i<lines.length; i++){
-    const l = lines[i];
-    // Patrón: "1 x Nombre" o "1x Nombre" con precio al lado o en línea siguiente
+  for(let i=0; i<normLines.length; i++){
+    const l = normLines[i];
     const m = l.match(/^(\d+)\s*[xX×]\s*(.+)/);
     if(!m) continue;
 
     let nombre = m[2].trim();
     let precio = 0;
 
-    // Precio en la misma línea
+    // Precio en la misma línea: $179.00 o MX$179.00
     const priceInLine = nombre.match(/\$\s*([\d,]+(?:\.\d{2})?)/);
     if(priceInLine){
-      precio = parseFloat(priceInLine[1].replace(',',''));
-      nombre = nombre.replace(/\s*\$[\d,.]+.*$/, '').trim();
+      precio = parseFloat(priceInLine[1].replace(',','.'));
+      nombre = nombre.replace(/\s*\$[\d,.]+.*$/,'').trim();
     }
 
-    // Precio en la siguiente línea (ticket UE a veces lo pone separado)
-    if(!precio && i+1 < lines.length){
-      const nextLine = lines[i+1];
-      const priceNext = nextLine.match(/^\$\s*([\d,]+(?:\.\d{2})?)/);
-      if(priceNext) precio = parseFloat(priceNext[1].replace(',',''));
+    // Si el nombre es muy corto, el producto continúa en la siguiente línea
+    // Ej: "1 x Orden de" + "Quesabirrias (3)  $179.00"
+    if(!precio && nombre.length < 15 && i+1 < normLines.length){
+      const nextL = normLines[i+1];
+      // Si la siguiente línea no empieza con número, es continuación
+      if(!/^\d+\s*[xX×]/.test(nextL) && !nextL.match(/^(ELIGE|SELECCIONA|PERSONALIZA|ANTOJO|Subtotal|Importe)/i)){
+        const priceNext = nextL.match(/\$\s*([\d,]+(?:\.\d{2})?)/);
+        if(priceNext){
+          precio = parseFloat(priceNext[1].replace(',','.'));
+          nombre = (nombre + ' ' + nextL.replace(/\$[\d,.]+/,'').trim()).trim();
+        } else {
+          nombre = (nombre + ' ' + nextL).trim();
+          // Buscar precio en línea i+2
+          if(i+2 < normLines.length){
+            const l2 = normLines[i+2];
+            const p2 = l2.match(/\$\s*([\d,]+(?:\.\d{2})?)/);
+            if(p2) precio = parseFloat(p2[1].replace(',','.'));
+          }
+        }
+      }
     }
 
-    // Limpiar el nombre de paréntesis con números "(5)"
+    // Limpiar nombre: quitar paréntesis con número "(3)", "(5)"
     nombre = nombre.replace(/\s*\(\d+\)\s*$/, '').trim();
+    nombre = nombre.replace(/\s*\$[\d,.]+.*$/,'').trim();
 
-    // Ignorar modificadores a $0 y líneas en MAYÚSCULAS (secciones)
-    if(precio === 0) continue;
-    if(nombre === nombre.toUpperCase() && nombre.length > 3) continue;
+    // Ignorar: precio $0, secciones en mayúsculas, modificadores
+    if(precio <= 0) continue;
     if(nombre.length < 2) continue;
 
     itemLines.push(`${m[1]}x ${nombre} $${precio}`);
   }
 
   // ── TOTAL ──
-  // Buscar "Importe pagado" o "Subtotal" con valor MXN
+  // "Importe pagado  462,00 MXN" — coma es separador decimal en MX
   let total = 0;
-  for(const l of lines){
-    const mImporte = l.match(/importe\s+pagado[:\s]+([\d,.]+)/i) ||
-                     l.match(/total[:\s]+([\d,.]+)\s*MXN/i) ||
-                     l.match(/subtotal[:\s]+([\d,.]+)/i);
+  for(const l of normLines){
+    // Buscar "Importe pagado" primero
+    const mImporte = l.match(/importe\s+pagado[:\s]*([\d,.]+)/i);
     if(mImporte){
-      const val = parseFloat(mImporte[1].replace(',','.').replace(',',''));
-      if(val > 0){ total = val; break; }
+      // 462,00 → 462.00 o 4620,00 → 4620.00
+      const raw = mImporte[1].replace(/\.(?=\d{3})/g,'').replace(',','.');
+      total = parseFloat(raw)||0;
+      break;
     }
   }
-  // Si no encontró, buscar el número más grande cercano a MXN
+  // Fallback: mayor valor numérico con MXN
   if(!total){
-    const mxnMatches = text.match(/([\d,]+(?:\.\d{2})?)\s*MXN/g)||[];
-    for(const m of mxnMatches){
-      const val = parseFloat(m.replace(/MXN|\s/g,'').replace(',',''));
-      if(val > total) total = val;
+    const mxnRe = /([\d,.]+)\s*MXN/g;
+    let m;
+    while((m=mxnRe.exec(normText))!==null){
+      const raw = m[1].replace(/\.(?=\d{3})/g,'').replace(',','.');
+      const val = parseFloat(raw)||0;
+      if(val>total) total=val;
     }
   }
 
@@ -942,7 +956,7 @@ function parseUETicket(text){
   const horaMatch = text.match(/(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm))/);
   if(horaMatch) hora = horaMatch[1];
 
-  console.log('[UE Parser] codigo:', codigo, 'cliente:', cliente, 'items:', itemLines, 'total:', total);
+  console.log('[UE Parser] codigo:',codigo,'cliente:',cliente,'items:',itemLines,'total:',total);
   showUEForm(cliente, codigo, itemLines.join('\n'), total, hora);
 }
 
