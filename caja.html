@@ -177,7 +177,7 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
     <label>URL de Firebase</label>
     <input class="setup-input" id="fbUrl" type="text" placeholder="https://tu-proyecto.firebaseio.com">
     <p class="fb-hint">La misma URL configurada en la app de mesero</p>
-    <button class="btn-entrar" onclick="entrar()">Conectar →</button>
+    <button class="btn-entrar" id="btnEntrar">Conectar →</button>
   </div>
 </div>
 
@@ -1127,6 +1127,9 @@ function loadScript(src){
     document.head.appendChild(s);
   });
 }
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.getElementById('btnEntrar').addEventListener('click', entrar);
 
 function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 
