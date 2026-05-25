@@ -177,6 +177,7 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
     <label>URL de Firebase</label>
     <input class="setup-input" id="fbUrl" type="text" placeholder="https://tu-proyecto.firebaseio.com">
     <p class="fb-hint">La misma URL configurada en la app de mesero</p>
+    <div id="setupErr" style="display:none;background:#fdeaea;color:#cc1a1a;padding:8px 10px;border-radius:7px;font-size:13px;font-weight:600;margin-bottom:8px;"></div>
     <button class="btn-entrar" id="btnEntrar">Conectar →</button>
   </div>
 </div>
@@ -376,12 +377,25 @@ function resetConfig(){
 }
 
 function entrar(){
-  const url=document.getElementById('fbUrl').value.trim().replace(/\/$/,'');
-  if(!url||!url.includes('firebaseio.com')){toast('URL incorrecta',true);return;}
-  fbUrl=url;
-  localStorage.setItem('rolys_caja_fb',fbUrl);
-  document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='flex';
+  const url = document.getElementById('fbUrl').value.trim().replace(/\/$/, '');
+  const errEl = document.getElementById('setupErr');
+
+  if(!url){
+    errEl.textContent = 'Ingresa la URL de Firebase';
+    errEl.style.display = 'block';
+    return;
+  }
+  if(!url.includes('firebaseio.com')){
+    errEl.textContent = 'La URL debe incluir firebaseio.com';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  fbUrl = url;
+  localStorage.setItem('rolys_caja_fb', fbUrl);
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
   startPolling();
 }
 window.addEventListener('load',()=>{
