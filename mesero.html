@@ -339,9 +339,9 @@ function renderComanda(){
     html+=lines.map(([k,l])=>`
       <div class="cline">
         <div class="qty-ctrl">
-          <button class="qbtn" onclick="chQty('${k}',-1)">-</button>
+          <button class="qbtn" data-key="${k}" data-delta="-1">−</button>
           <div class="qnum">${l.qty}</div>
-          <button class="qbtn" onclick="chQty('${k}',1)">+</button>
+          <button class="qbtn" data-key="${k}" data-delta="1">+</button>
         </div>
         <div class="cinfo">
           <div class="cname">${l.nombre}</div>
@@ -358,6 +358,15 @@ function renderComanda(){
 }
 function setComentario(k,v){if(pedido[k])pedido[k].comentario=v;}
 function chQty(k,d){pedido[k].qty+=d;if(pedido[k].qty<=0)delete pedido[k];renderComanda();renderMenu();updateBar();}
+
+// Delegación de eventos para botones qty en comanda
+document.getElementById('mBody').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-key]');
+  if(!btn) return;
+  var k = btn.getAttribute('data-key');
+  var d = parseInt(btn.getAttribute('data-delta'));
+  if(k && !isNaN(d)) chQty(k, d);
+});
 function limpiarComanda(){if(confirm('Limpiar comanda?')){pedido={};document.getElementById('nota').value='';renderComanda();renderMenu();updateBar();closeOv();}}
 function nuevaComanda(){
   if(Object.keys(pedido).length>0&&!confirm('Borrar comanda actual?'))return;
