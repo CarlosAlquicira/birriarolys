@@ -799,9 +799,6 @@ async function ejecutarCorte(){
   btn.textContent = '🗑️ Guardar en Sheets y cerrar día';
   btn.disabled = false;
 }
-  const btn = document.getElementById('btn-cerrar-dia');
-  if(btn){ btn.textContent='🗑️ Cerrar día y limpiar'; btn.disabled=false; }
-}
 
 // IMPRIMIR
 function printTicketByKey(key){if(comandas[key])printTicket(comandas[key]);}
