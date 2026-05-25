@@ -270,62 +270,58 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
 <!-- MODAL UBER EATS -->
 <div class="corte-ov" id="ueOv" onclick="closeUEOv(event)">
-  <div class="corte-box" style="max-width:400px;max-height:90dvh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+  <div class="corte-box" style="max-width:420px;max-height:92dvh;overflow-y:auto;padding:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
       <div class="corte-title" style="font-size:17px;color:var(--green);">Registrar Uber Eats</div>
       <button onclick="closeUEOv()" style="background:var(--g1);border:1px solid var(--g2);border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button>
     </div>
-    <p style="font-size:12px;color:var(--g4);margin-bottom:12px;">Sube el ticket desde galeria o captura manual</p>
 
-    <!-- BOTONES -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-      <button onclick="document.getElementById('uePhotoGal').click()" style="background:var(--blue);color:#fff;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
-        🖼️ Subir foto
-      </button>
-      <button onclick="showUEForm('','','','',new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}))" style="background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">
-        ✏️ Captura manual
-      </button>
+    <!-- CLIENTE + CODIGO -->
+    <div style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:10px;">
+      <div>
+        <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;font-weight:700;text-transform:uppercase;">Cliente</label>
+        <input id="ueCliente" type="text" placeholder="Nombre cliente" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;font-weight:700;text-transform:uppercase;">Codigo</label>
+        <input id="ueCodigo" type="text" placeholder="A2097" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
+      </div>
+    </div>
+
+    <!-- MENU UE -->
+    <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Menu Uber Eats</div>
+    <div id="ueTabs" style="display:flex;gap:6px;margin-bottom:8px;"></div>
+    <div id="ueMenuGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;max-height:200px;overflow-y:auto;-webkit-overflow-scrolling:touch;"></div>
+
+    <!-- CARRITO -->
+    <div id="ueCart" style="margin-bottom:10px;display:none;">
+      <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Pedido</div>
+      <div id="ueCartLines"></div>
+    </div>
+
+    <!-- HORA + FOTO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div>
+        <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;font-weight:700;text-transform:uppercase;">Hora</label>
+        <input id="ueHora" type="text" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button onclick="document.getElementById('uePhotoGal').click()" style="width:100%;background:var(--g1);color:var(--g5);border:1.5px solid var(--g3);padding:7px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">🖼️ Foto ticket (OCR)</button>
+      </div>
     </div>
 
     <input type="file" id="uePhotoGal" accept="image/*" style="display:none;" onchange="processUEPhoto(this)">
+    <img id="uePreview" style="display:none;width:100%;border-radius:8px;margin-bottom:8px;max-height:120px;object-fit:contain;border:1px solid var(--g2);">
+    <div id="ueStatus" style="text-align:center;font-size:12px;color:var(--g4);padding:4px 0;display:none;"></div>
 
-    <!-- STATUS -->
-    <div id="ueStatus" style="text-align:center;font-size:12px;color:var(--g4);padding:6px 0;display:none;"></div>
-
-    <!-- PREVIEW -->
-    <img id="uePreview" style="display:none;width:100%;border-radius:8px;margin-bottom:10px;max-height:160px;object-fit:contain;border:1px solid var(--g2);">
-
-    <!-- FORMULARIO -->
-    <div id="ueResult" style="display:none;">
-      <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Datos del pedido — revisa y edita si es necesario</div>
-      <div style="display:grid;grid-template-columns:1fr 90px;gap:8px;margin-bottom:8px;">
-        <div>
-          <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Cliente</label>
-          <input id="ueCliente" type="text" placeholder="Nombre cliente" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Codigo UE</label>
-          <input id="ueCodigo" type="text" placeholder="EJ: A2097" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
-        </div>
-      </div>
-      <div style="margin-bottom:8px;">
-        <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Productos (uno por linea: 1x Ramen de Birria $179)</label>
-        <textarea id="ueItems" rows="4" placeholder="1x Producto $precio" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:12px;font-family:monospace;resize:none;outline:none;"></textarea>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-        <div>
-          <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Total $</label>
-          <input id="ueTotal" type="number" placeholder="462" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:14px;font-weight:700;color:var(--red);outline:none;font-family:inherit;">
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--g4);display:block;margin-bottom:3px;">Hora</label>
-          <input id="ueHora" type="text" style="width:100%;border:1.5px solid var(--g2);border-radius:6px;padding:7px 9px;font-size:13px;outline:none;font-family:inherit;">
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:8px;">
-        <button onclick="closeUEOv()" style="background:var(--g1);border:1.5px solid var(--g3);color:var(--g5);padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
-        <button onclick="registrarUE()" style="background:var(--green);border:none;color:#fff;padding:10px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">✓ Registrar pedido</button>
-      </div>
+    <!-- TOTAL -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 10px;border-top:1px solid var(--g2);">
+      <div style="font-size:12px;color:var(--g4);font-weight:700;text-transform:uppercase;">Total</div>
+      <div id="ueTotalDisplay" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--red);">$0</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:8px;">
+      <button onclick="closeUEOv()" style="background:var(--g1);border:1.5px solid var(--g3);color:var(--g5);padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="registrarUE()" style="background:var(--green);border:none;color:#fff;padding:10px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">✓ Registrar pedido</button>
     </div>
   </div>
 </div>
@@ -355,6 +351,37 @@ const MENU_CAJA = [
     {id:"b8", n:"Topo Chico", s:"355ml", p:35},
     {id:"b9", n:"Electrolit", s:"625ml", p:45, sabores:["Ponche de Fruta","Naranja","Limon","Uva","Mora Azul","Manzana","Maracuya"]},
     {id:"b10", n:"Cafe del dia", v:[{l:"Chico 180ml",p:39},{l:"Grande 250ml",p:49}]}
+  ]}
+];
+
+const MENU_UE = [
+  {cat:"Birria", items:[
+    {id:"ue_bc",  n:"Plato Chico",              p:97.53},
+    {id:"ue_bg",  n:"Plato Grande",             p:165.01},
+    {id:"ue_rc",  n:"Birriamen Chico",          p:91.40},
+    {id:"ue_rg",  n:"Birriamen Grande",         p:115.94},
+    {id:"ue_eb",  n:"Extra Birria 100g",        p:54.59},
+    {id:"ue_eh",  n:"Extra Huevo",              p:14.72},
+    {id:"ue_et",  n:"Extra Tortillas",          p:8.59},
+    {id:"ue_t1",  n:"Taco Suave Individual",    p:33.74},
+    {id:"ue_t3",  n:"Orden Tacos Suaves (3)",   p:103.67},
+    {id:"ue_t5",  n:"Orden Tacos Suaves (5)",   p:165.01},
+    {id:"ue_qa",  n:"Quesabirria Maiz Ind",     p:36.19},
+    {id:"ue_qh",  n:"Quesabirria Harina Ind",   p:36.19},
+    {id:"ue_qa3", n:"Orden Quesa Maiz (3)",     p:109.80},
+    {id:"ue_qh3", n:"Orden Quesa Harina (3)",   p:109.80},
+    {id:"ue_qa5", n:"Orden Quesa Maiz (5)",     p:183.41},
+    {id:"ue_qh5", n:"Orden Quesa Harina (5)",   p:183.41},
+    {id:"ue_pr",  n:"Promo Ramen",              p:91.40}
+  ]},
+  {cat:"Bebidas", items:[
+    {id:"ue_cafe", n:"Cafe del Dia",            p:28.35},
+    {id:"ue_coca", n:"Coca-Cola",               p:27.60},
+    {id:"ue_cocs", n:"Coca-Cola S/A",           p:27.60},
+    {id:"ue_mun",  n:"Sidral Mundet",           p:36.19},
+    {id:"ue_top",  n:"Topo Chico 600ml",        p:36.19},
+    {id:"ue_sm",   n:"Suero Manzana",           p:40.43},
+    {id:"ue_su",   n:"Suero Uva",               p:40.43}
   ]}
 ];
 
@@ -892,20 +919,130 @@ function playBeep(){try{const ctx=new(window.AudioContext||window.webkitAudioCon
 // ── UBER EATS MANUAL ────────────────────────────────────────────────────
 
 // ── UBER EATS MODAL ────────────────────────────────────────────────────────
+var ueCarrito = {}; // id -> {n, p, qty}
+var ueTabActivo = MENU_UE[0].cat;
+
 function openUEModal(){
-  document.getElementById('ueResult').style.display='none';
-  document.getElementById('uePreview').style.display='none';
-  document.getElementById('ueStatus').style.display='none';
-  document.getElementById('ueCliente').value='';
-  document.getElementById('ueCodigo').value='';
-  document.getElementById('ueItems').value='';
-  document.getElementById('ueTotal').value='';
-  document.getElementById('ueHora').value=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  ueCarrito = {};
+  ueTabActivo = MENU_UE[0].cat;
+  document.getElementById('ueCliente').value = '';
+  document.getElementById('ueCodigo').value = '';
+  document.getElementById('ueHora').value = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('uePreview').style.display = 'none';
+  document.getElementById('ueStatus').style.display = 'none';
+  renderUETabs();
+  renderUEMenu();
+  renderUECarrito();
   document.getElementById('ueOv').classList.add('show');
 }
+
 function closeUEOv(e){
-  if(e&&e.target!==e.currentTarget)return;
+  if(e && e.target !== e.currentTarget) return;
   document.getElementById('ueOv').classList.remove('show');
+}
+
+function renderUETabs(){
+  document.getElementById('ueTabs').innerHTML = MENU_UE.map(c =>
+    `<button onclick="setUETab('${c.cat}')" style="flex-shrink:0;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid ${c.cat===ueTabActivo?'var(--green)':'var(--g3)'};background:${c.cat===ueTabActivo?'var(--green)':'var(--white)'};color:${c.cat===ueTabActivo?'#fff':'var(--g5)'};">${c.cat}</button>`
+  ).join('');
+}
+
+function setUETab(cat){ ueTabActivo = cat; renderUETabs(); renderUEMenu(); }
+
+function renderUEMenu(){
+  const cat = MENU_UE.find(c => c.cat === ueTabActivo);
+  if(!cat) return;
+  document.getElementById('ueMenuGrid').innerHTML = cat.items.map(item => {
+    const qty = ueCarrito[item.id] ? ueCarrito[item.id].qty : 0;
+    return `<div onclick="addUEItem('${item.id}')" style="background:${qty>0?'#edf7f2':'var(--white)'};border:1.5px solid ${qty>0?'var(--green)':'var(--g2)'};border-radius:8px;padding:8px 7px;cursor:pointer;position:relative;">
+      ${qty>0?`<div style="position:absolute;top:4px;right:5px;background:var(--green);color:#fff;font-size:10px;font-weight:700;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;">${qty}</div>`:''}
+      <div style="font-size:11px;font-weight:600;color:var(--text);line-height:1.3;padding-right:${qty>0?'18px':'0'};">${item.n}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-top:3px;">$${item.p.toFixed(2)}</div>
+    </div>`;
+  }).join('');
+}
+
+function addUEItem(id){
+  const item = findUEItem(id);
+  if(!item) return;
+  if(!ueCarrito[id]) ueCarrito[id] = {n:item.n, p:item.p, qty:0};
+  ueCarrito[id].qty++;
+  renderUEMenu();
+  renderUECarrito();
+  if(navigator.vibrate) navigator.vibrate(20);
+}
+
+function removeUEItem(id){
+  if(!ueCarrito[id]) return;
+  ueCarrito[id].qty--;
+  if(ueCarrito[id].qty <= 0) delete ueCarrito[id];
+  renderUEMenu();
+  renderUECarrito();
+}
+
+function findUEItem(id){
+  for(const c of MENU_UE){ const f=c.items.find(i=>i.id===id); if(f) return f; }
+}
+
+function renderUECarrito(){
+  const lines = Object.entries(ueCarrito).filter(([,v])=>v.qty>0);
+  const total = lines.reduce((s,[,v])=>s+v.p*v.qty,0);
+  document.getElementById('ueTotalDisplay').textContent = '$'+total.toFixed(2);
+  const cartEl = document.getElementById('ueCart');
+  const cartLines = document.getElementById('ueCartLines');
+  if(!lines.length){ cartEl.style.display='none'; return; }
+  cartEl.style.display = 'block';
+  cartLines.innerHTML = lines.map(([id,v])=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--g2);">
+      <div style="display:flex;align-items:center;gap:4px;background:var(--g1);border-radius:7px;overflow:hidden;border:1px solid var(--g2);">
+        <button onclick="removeUEItem('${id}')" style="width:26px;height:26px;background:none;border:none;font-size:16px;font-weight:700;color:var(--red);cursor:pointer;">−</button>
+        <span style="font-size:14px;font-weight:700;min-width:16px;text-align:center;">${v.qty}</span>
+        <button onclick="addUEItem('${id}')" style="width:26px;height:26px;background:none;border:none;font-size:16px;font-weight:700;color:var(--green);cursor:pointer;">+</button>
+      </div>
+      <div style="flex:1;font-size:12px;font-weight:600;">${v.n}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--red);">$${(v.p*v.qty).toFixed(2)}</div>
+    </div>`).join('');
+}
+
+async function registrarUE(){
+  const cliente = document.getElementById('ueCliente').value.trim() || 'Cliente UE';
+  const codigo  = document.getElementById('ueCodigo').value.trim() || ('UE'+Date.now().toString().slice(-4));
+  const hora    = document.getElementById('ueHora').value || new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const fecha   = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  const lines = Object.entries(ueCarrito).filter(([,v])=>v.qty>0);
+  if(!lines.length){ toast('Agrega productos primero',true); return; }
+
+  const items = lines.map(([,v])=>({
+    nombre: v.n,
+    qty: v.qty,
+    precio: v.p,
+    subtotal: Math.round(v.p * v.qty * 100) / 100,
+    comentario: ''
+  }));
+  const total = Math.round(items.reduce((s,i)=>s+i.subtotal,0)*100)/100;
+
+  const comanda = {
+    mesa:'Uber Eats', mesero:'UberEats',
+    cliente, codigoUE: codigo,
+    canal:'ubereats', hora, fecha,
+    timestamp: Date.now(), total, nota:'',
+    personas:[{nombre:cliente, items}],
+    estado:'pendiente'
+  };
+
+  try{
+    const r = await fetch(`${fbUrl}/comandas.json`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(comanda)
+    });
+    if(!r.ok) throw new Error();
+    closeUEOv();
+    toast('Pedido UE registrado ✓');
+  }catch{
+    toast('Error al registrar — verifica conexion',true);
+  }
 }
 
 async function processUEPhoto(input){
@@ -1080,56 +1217,6 @@ function showUEForm(cliente, codigo, items, total, hora){
   document.getElementById('ueHora').value    = hora;
   document.getElementById('ueResult').style.display='block';
 }
-
-async function registrarUE(){
-  const cliente = document.getElementById('ueCliente').value.trim()||'Cliente UE';
-  const codigo  = document.getElementById('ueCodigo').value.trim()||('UE'+Date.now().toString().slice(-4));
-  const itemsRaw= document.getElementById('ueItems').value.trim();
-  const total   = parseFloat(document.getElementById('ueTotal').value)||0;
-  const hora    = document.getElementById('ueHora').value||new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-  const fecha   = new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
-
-  // Parsear items del textarea
-  const items = [];
-  for(const line of itemsRaw.split('\n')){
-    const l = line.trim();
-    if(!l)continue;
-    const m = l.match(/^(\d+)[xX×]\s*(.+?)(?:\s+\$?([\d,.]+))?$/);
-    if(m){
-      const qty = parseInt(m[1]);
-      const nombre = m[2].trim();
-      const subtotal = m[3]?parseFloat(m[3].replace(',','')):0;
-      items.push({nombre,qty,precio:subtotal?Math.round(subtotal/qty):0,subtotal,comentario:''});
-    } else if(l.length>1){
-      items.push({nombre:l,qty:1,precio:0,subtotal:0,comentario:''});
-    }
-  }
-
-  if(!items.length) items.push({nombre:'Pedido Uber Eats',qty:1,precio:total,subtotal:total,comentario:''});
-
-  const comanda = {
-    mesa:'Uber Eats', mesero:'UberEats',
-    cliente, codigoUE:codigo,
-    canal:'ubereats', hora, fecha,
-    timestamp:Date.now(), total, nota:'',
-    personas:[{nombre:cliente,items}],
-    estado:'pendiente'
-  };
-
-  try{
-    const r = await fetch(`${fbUrl}/comandas.json`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(comanda)
-    });
-    if(!r.ok)throw new Error();
-    closeUEOv();
-    toast('Pedido UE registrado ✓');
-  }catch{
-    toast('Error al registrar — verifica conexión',true);
-  }
-}
-
 
 function loadScript(src){
   return new Promise(function(resolve,reject){
