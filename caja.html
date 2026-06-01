@@ -33,7 +33,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);mar
 .btn-entrar{width:100%;background:var(--red);border:none;color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
 
 /* APP */
-#app{display:none;flex-direction:column;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;}
+#app{display:none;flex-direction:column;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--g1);}
 
 header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:8px;}
 .hdr-logo{height:42px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;}
@@ -63,7 +63,9 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .ftab.active{background:var(--red);color:#fff;border-color:var(--red);}
 
 /* LIST */
-.list-wrap{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.list-container{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;}
+.list-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain;}
+
 
 .cmd-card{background:var(--white);border-radius:var(--radius);border-left:4px solid var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.09);overflow:hidden;}
 .cmd-card.lista{border-left-color:var(--green);}
@@ -232,11 +234,13 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
     <button class="ftab" onclick="setFilter('entregado',this)">Entregadas</button>
   </div>
 
-  <div class="list-wrap" id="listWrap">
-    <div class="empty-list">
-      <div class="empty-icon">🧾</div>
-      <div class="empty-title">Sin comandas</div>
-      <div class="empty-sub">Las comandas aparecerán aquí</div>
+  <div class="list-container">
+    <div class="list-wrap" id="listWrap">
+      <div class="empty-list">
+        <div class="empty-icon">🧾</div>
+        <div class="empty-title">Sin comandas</div>
+        <div class="empty-sub">Las comandas aparecerán aquí</div>
+      </div>
     </div>
   </div>
 </div>
@@ -492,7 +496,7 @@ window.addEventListener('load',()=>{
     // Auto-entrar si ya tenía URL guardada
     fbUrl=f;
     document.getElementById('setup').style.display='none';
-    document.getElementById('app').style.display='flex';
+    document.getElementById('app').style.display='flex'; document.getElementById('app').style.flexDirection='column';
     startPolling();
   }
 });
