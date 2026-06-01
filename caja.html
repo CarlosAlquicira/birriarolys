@@ -279,6 +279,9 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
     <div class="corte-stat"><span class="corte-stat-lbl">Total vendido</span><span class="corte-stat-val big" id="corteTotal">$0</span></div>
     <div class="corte-stat"><span class="corte-stat-lbl">Mesas / Para llevar</span><span class="corte-stat-val" id="corteMesa" style="font-size:14px">—</span></div>
     <div class="corte-stat"><span class="corte-stat-lbl">Uber Eats</span><span class="corte-stat-val" id="corteUE" style="font-size:14px;color:var(--blue)">—</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">💵 Efectivo</span><span class="corte-stat-val" id="corteEfectivo" style="font-size:14px;color:var(--green)">—</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">💳 Tarjeta</span><span class="corte-stat-val" id="corteTarjeta" style="font-size:14px;color:var(--blue)">—</span></div>
+    <div class="corte-stat"><span class="corte-stat-lbl">🎁 Propinas</span><span class="corte-stat-val" id="cortePropinas" style="font-size:14px;color:#8b5cf6">—</span></div>
     <!-- Top productos -->
     <div id="corteProductos" style="margin-top:8px;padding:10px;background:var(--g1);border-radius:8px;font-size:11px;display:none;">
       <div style="font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Productos vendidos</div>
@@ -744,13 +747,23 @@ async function eliminar(key){
 // CORTE
 function openCorte(){
   const vals=Object.values(comandas);
-  const total=vals.reduce((s,c)=>s+c.total,0);
-  const totalUE=vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+c.total,0);
-  const totalMesa=vals.filter(c=>!c.canal||c.canal==='mesa').reduce((s,c)=>s+c.total,0);
-  const entregadas=vals.filter(c=>c.estado==='entregado').length;
-  const pendientes=vals.filter(c=>c.estado!=='entregado').length;
-  const nUE=vals.filter(c=>c.canal==='ubereats').length;
-  const nMesa=vals.filter(c=>!c.canal||c.canal==='mesa').length;
+  const f=v=>parseFloat((v||0).toFixed(2));
+  const sum=(arr,fn)=>f(arr.reduce((s,c)=>s+(fn(c)||0),0));
+
+  const total      = sum(vals, c=>c.total);
+  const totalUE    = sum(vals.filter(c=>c.canal==='ubereats'), c=>c.total);
+  const totalMesa  = f(total-totalUE);
+  const entregadas = vals.filter(c=>c.estado==='entregado').length;
+  const pendientes = vals.filter(c=>c.estado!=='entregado').length;
+  const nUE        = vals.filter(c=>c.canal==='ubereats').length;
+  const nMesa      = vals.filter(c=>!c.canal||c.canal==='mesa').length;
+
+  // Propinas y métodos de pago (solo comandas con cobro registrado)
+  const conCobro   = vals.filter(c=>c.cobro);
+  const propinas   = f(conCobro.reduce((s,c)=>s+(parseFloat(c.cobro.propina)||0),0));
+  const efectivo   = f(conCobro.filter(c=>c.cobro.metodo==='efectivo').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  const tarjeta    = f(conCobro.filter(c=>c.cobro.metodo==='tarjeta').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+
   const fecha=new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('corteFecha').textContent=fecha;
   document.getElementById('corteN').textContent=entregadas+' de '+vals.length;
@@ -758,6 +771,9 @@ function openCorte(){
   document.getElementById('corteTotal').textContent='$'+total.toFixed(2);
   document.getElementById('corteMesa').textContent=`${nMesa} comandas: $${totalMesa.toFixed(2)}`;
   document.getElementById('corteUE').textContent=`${nUE} pedidos: $${totalUE.toFixed(2)}`;
+  document.getElementById('corteEfectivo').textContent='$'+efectivo.toFixed(2);
+  document.getElementById('corteTarjeta').textContent='$'+tarjeta.toFixed(2);
+  document.getElementById('cortePropinas').textContent='$'+propinas.toFixed(2);
 
   // Desglose por producto
   const prodMap={};
@@ -767,14 +783,14 @@ function openCorte(){
         const k=item.nombre||'';
         if(!prodMap[k])prodMap[k]={qty:0,total:0};
         prodMap[k].qty+=item.qty||1;
-        prodMap[k].total+=item.subtotal||0;
+        prodMap[k].total+=parseFloat(item.subtotal)||0;
       });
     });
     (c.items||[]).forEach(item=>{
       const k=item.nombre||'';
       if(!prodMap[k])prodMap[k]={qty:0,total:0};
       prodMap[k].qty+=item.qty||1;
-      prodMap[k].total+=item.subtotal||0;
+      prodMap[k].total+=parseFloat(item.subtotal)||0;
     });
   });
   const sorted=Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty);
@@ -794,9 +810,17 @@ function openCorte(){
 
 function buildCorteTicket(){
   const vals=Object.values(comandas);
-  const total=vals.reduce((s,c)=>s+c.total,0);
-  const totalUE=vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+c.total,0);
-  const totalMesa=total-totalUE;
+  const f=v=>parseFloat((v||0).toFixed(2));
+  const sum=(arr,fn)=>f(arr.reduce((s,c)=>s+(fn(c)||0),0));
+
+  const total     = sum(vals, c=>c.total);
+  const totalUE   = sum(vals.filter(c=>c.canal==='ubereats'), c=>c.total);
+  const totalMesa = f(total-totalUE);
+  const conCobro  = vals.filter(c=>c.cobro);
+  const propinas  = f(conCobro.reduce((s,c)=>s+(parseFloat(c.cobro.propina)||0),0));
+  const efectivo  = f(conCobro.filter(c=>c.cobro.metodo==='efectivo').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  const tarjeta   = f(conCobro.filter(c=>c.cobro.metodo==='tarjeta').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+
   const fecha=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
   const hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
   const W=42;
@@ -808,12 +832,12 @@ function buildCorteTicket(){
     (c.personas||[]).forEach(p=>(p.items||[]).forEach(item=>{
       const k=item.nombre||'';
       if(!prodMap[k])prodMap[k]={qty:0,total:0};
-      prodMap[k].qty+=item.qty||1; prodMap[k].total+=item.subtotal||0;
+      prodMap[k].qty+=item.qty||1; prodMap[k].total+=parseFloat(item.subtotal)||0;
     }));
     (c.items||[]).forEach(item=>{
       const k=item.nombre||'';
       if(!prodMap[k])prodMap[k]={qty:0,total:0};
-      prodMap[k].qty+=item.qty||1; prodMap[k].total+=item.subtotal||0;
+      prodMap[k].qty+=item.qty||1; prodMap[k].total+=parseFloat(item.subtotal)||0;
     });
   });
 
@@ -828,13 +852,19 @@ function buildCorteTicket(){
   L.push(row('  Mesas / Para llevar','$'+totalMesa.toFixed(2)));
   L.push(row('  Uber Eats','$'+totalUE.toFixed(2)));
   L.push('------------------------------------------');
+  L.push('FORMA DE PAGO:');
+  L.push(row('  Efectivo','$'+efectivo.toFixed(2)));
+  L.push(row('  Tarjeta','$'+tarjeta.toFixed(2)));
+  L.push(row('  Propinas','$'+propinas.toFixed(2)));
+  L.push('------------------------------------------');
   L.push('PRODUCTOS VENDIDOS:');
   Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty).forEach(([nombre,d])=>{
     const nm=`  ${d.qty}x ${nombre}`.slice(0,W-8);
     L.push(row(nm,'$'+d.total.toFixed(2)));
   });
   L.push('==========================================');
-  L.push(center('TOTAL: $'+total.toFixed(2)));
+  L.push(center('TOTAL VENTAS: $'+total.toFixed(2)));
+  L.push(center('TOTAL COBRADO: $'+(f(efectivo+tarjeta)).toFixed(2)));
   L.push('==========================================');
   L.push(''); L.push(''); L.push('');
   return L.join('\n');
@@ -1353,7 +1383,7 @@ function setPropina(pct){
     b.style.color = val===pct ? '#fff' : '';
     b.style.borderColor = val===pct ? '#1d8a4a' : '';
   });
-  const propina = pct > 0 ? Math.round(cobroTotalBase * pct / 100) : 0;
+  const propina = pct > 0 ? parseFloat((cobroTotalBase * pct / 100).toFixed(2)) : 0;
   document.getElementById('cobroPropina').value = propina > 0 ? propina : '';
   updateResumen();
 }
