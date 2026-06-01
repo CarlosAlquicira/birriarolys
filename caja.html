@@ -17,7 +17,7 @@
   --radius:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);height:100%;height:100dvh;overflow:hidden;display:flex;flex-direction:column;position:fixed;width:100%;}
 
 /* SETUP */
 #setup{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:14px;text-align:center;}
@@ -32,7 +32,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);hei
 .btn-entrar{width:100%;background:var(--red);border:none;color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
 
 /* APP */
-#app{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;max-height:100dvh;}
+#app{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;}
 
 header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:8px;}
 .hdr-logo{height:42px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;}
@@ -62,7 +62,7 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .ftab.active{background:var(--red);color:#fff;border-color:var(--red);}
 
 /* LIST */
-.list-wrap{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0;}
+.list-wrap{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:0;overscroll-behavior:contain;}
 
 .cmd-card{background:var(--white);border-radius:var(--radius);border-left:4px solid var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.09);overflow:hidden;}
 .cmd-card.lista{border-left-color:var(--green);}
@@ -585,7 +585,7 @@ function renderCard(key,c){
         <div class="cmd-mesa">${isUE?'<span style="background:#06b;color:#fff;font-size:12px;padding:1px 6px;border-radius:4px;font-family:DM Sans,sans-serif;font-weight:700;vertical-align:middle;margin-right:4px;">UE</span>':''}${c.canal==='ubereats'?c.codigoUE||'UberEats':('Mesa '+(c.mesa||''))}</div>
         <div class="cmd-meta">${c.canal==='ubereats'?(c.cliente||''):''}${c.mesero&&c.canal!=='ubereats'?' · '+c.mesero:''} · ${c.hora||''}</div>
       </div>
-      <div class="cmd-total">$${c.total}</div>
+      <div class="cmd-total">$${parseFloat(c.total||0).toFixed(2)}</div>
     </div>
     ${itemsHtml}
     ${c.nota?`<div class="cmd-nota">📝 ${c.nota}</div>`:''}
@@ -609,12 +609,12 @@ function updateStats(){
   const vals=Object.values(comandas);
   document.getElementById('stPend').textContent=vals.filter(c=>c.estado==='pendiente').length;
   document.getElementById('stList').textContent=vals.filter(c=>c.estado==='lista').length;
-  const totalAll=vals.reduce((s,c)=>s+c.total,0);
-  const totalUE=vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+c.total,0);
-  const totalMesa=totalAll-totalUE;
-  document.getElementById('stTotal').textContent='$'+totalAll;
+  const totalAll=parseFloat(vals.reduce((s,c)=>s+(parseFloat(c.total)||0),0).toFixed(2));
+  const totalUE=parseFloat(vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+(parseFloat(c.total)||0),0).toFixed(2));
+  const totalMesa=parseFloat((totalAll-totalUE).toFixed(2));
+  document.getElementById('stTotal').textContent='$'+totalAll.toFixed(2);
   const n=vals.length;
-  document.getElementById('hdrSub').textContent=n>0?`${n} comandas | Mesas $${totalMesa} | UE $${totalUE}`:'Esperando comandas...';
+  document.getElementById('hdrSub').textContent=n>0?`${n} comandas | Mesas $${totalMesa.toFixed(2)} | UE $${totalUE.toFixed(2)}`:'Esperando comandas...';
 }
 
 async function setEstado(key,estado){
