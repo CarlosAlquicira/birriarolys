@@ -17,8 +17,8 @@
   --radius:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{height:100%;}
-body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);margin:0;padding:0;}
+html{height:100%;-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);margin:0;padding:0;height:100%;}
 
 /* SETUP */
 #setup{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:14px;text-align:center;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;}
@@ -33,7 +33,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);mar
 .btn-entrar{width:100%;background:var(--red);border:none;color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
 
 /* APP */
-#app{display:none;flex-direction:column;height:100vh;height:100svh;overflow:hidden;background:var(--g1);}
+#app{display:none;flex-direction:column;background:var(--g1);}
 
 header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:8px;}
 .hdr-logo{height:42px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;}
@@ -64,7 +64,7 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 
 /* LIST */
 .list-container{flex:1;overflow:hidden;min-height:0;}
-.list-wrap{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.list-wrap{height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px 10px 80px;}
 
 
 .cmd-card{background:var(--white);border-radius:var(--radius);border-left:4px solid var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.09);overflow:hidden;}
@@ -489,7 +489,7 @@ function entrar(){
   fbUrl = url;
   localStorage.setItem('rolys_caja_fb', fbUrl);
   document.getElementById('setup').style.display = 'none';
-  document.getElementById('app').style.display='flex';document.getElementById('app').style.flexDirection='column';
+  var appEl=document.getElementById('app');appEl.style.display='flex';appEl.style.flexDirection='column';appEl.style.height=window.innerHeight+'px';
   startPolling();
 }
 window.addEventListener('load',()=>{
@@ -499,12 +499,20 @@ window.addEventListener('load',()=>{
     // Auto-entrar si ya tenía URL guardada
     fbUrl=f;
     document.getElementById('setup').style.display='none';
-    document.getElementById('app').style.display='flex';document.getElementById('app').style.flexDirection='column';
+    var appEl=document.getElementById('app');appEl.style.display='flex';appEl.style.flexDirection='column';appEl.style.height=window.innerHeight+'px';
     startPolling();
   }
 });
 
 function startPolling(){poll();polling=setInterval(poll,3000);}
+
+function resizeApp(){
+  var h = window.innerHeight;
+  var app = document.getElementById('app');
+  if(app && app.style.display !== 'none') app.style.height = h + 'px';
+}
+window.addEventListener('resize', resizeApp);
+window.addEventListener('orientationchange', function(){ setTimeout(resizeApp, 100); });
 
 async function poll(){
   try{
