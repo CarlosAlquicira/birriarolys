@@ -70,6 +70,9 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .cmd-card{background:var(--white);border-radius:var(--radius);border-left:4px solid var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.09);overflow:hidden;}
 .cmd-card.lista{border-left-color:var(--green);}
 .cmd-card.entregado{border-left-color:var(--g3);opacity:0.55;}
+.cmd-hdr{padding:10px 12px 6px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.cmd-mesa{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
+.cmd-total{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--red);white-space:nowrap;}
 
 .cmd-hdr{padding:10px 12px 7px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .cmd-mesa{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;}
@@ -535,6 +538,10 @@ function renderList(){
   if(!entries.length){
     wrap.innerHTML=`<div class="empty-list"><div class="empty-icon">🧾</div><div class="empty-title">Sin comandas</div><div class="empty-sub">${filter==='todas'?'Las comandas aparecerán aquí':'Sin comandas con este estado'}</div></div>`;
     return;
+  }
+  // Diagnóstico: mostrar primera comanda en consola
+  if(entries.length > 0) {
+    console.log('[Caja] Primera comanda:', JSON.stringify(entries[0][1]).slice(0,300));
   }
   wrap.innerHTML=entries.map(([key,c])=>renderCard(key,c)).join('');
 }
