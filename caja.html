@@ -17,8 +17,8 @@
   --radius:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{height:100%;-webkit-text-size-adjust:100%;}
-body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);margin:0;padding:0;height:100%;}
+html{height:100%;height:-webkit-fill-available;-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);margin:0;padding:0;min-height:100vh;min-height:-webkit-fill-available;}
 
 /* SETUP */
 #setup{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:14px;text-align:center;position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;}
@@ -33,9 +33,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);mar
 .btn-entrar{width:100%;background:var(--red);border:none;color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
 
 /* APP */
-#app{display:none;flex-direction:column;background:var(--g1);}
+#app{display:none;flex-direction:column;background:var(--g1);height:100vh;height:-webkit-fill-available;}
 
-header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:8px;}
+header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:8px;position:relative;z-index:10;}
 .hdr-logo{height:42px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;}
 .hdr-center{flex:1;}
 .hdr-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--red);line-height:1;letter-spacing:0.5px;}
@@ -63,8 +63,8 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .ftab.active{background:var(--red);color:#fff;border-color:var(--red);}
 
 /* LIST */
-.list-container{flex:1;overflow:hidden;min-height:0;}
-.list-wrap{height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px 10px 80px;}
+.list-container{flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column;}
+.list-wrap{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px;-webkit-overflow-scrolling:touch;}
 
 
 .cmd-card{background:var(--white);border-radius:var(--radius);border-left:4px solid var(--amber);box-shadow:0 1px 4px rgba(0,0,0,0.09);overflow:hidden;}
@@ -126,7 +126,8 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .am-ef{width:100%;background:var(--g1);border:1px solid var(--g3);border-radius:5px;font-size:11px;padding:3px 6px;outline:none;}
 
 /* ACTIONS */
-.cmd-actions{border-top:1px solid var(--g2);padding:8px 10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;background:var(--off);}
+.cmd-actions{border-top:1px solid var(--g2);padding:8px 10px;display:flex;flex-wrap:wrap;gap:5px;background:var(--off);}
+.cmd-actions .btn-estado{flex:1;min-width:70px;}
 .cmd-actions-row2{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;padding:0 10px 8px;background:var(--off);}
 .btn-estado{width:100%;padding:8px 4px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;text-align:center;}
 .btn-pendiente{background:var(--amber-bg);color:var(--amber);border:1.5px solid var(--amber) !important;}
@@ -153,9 +154,9 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .btn-ok-alerta{background:#fff;color:var(--green);border:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
 
 /* CORTE MODAL */
-.corte-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;align-items:center;justify-content:center;}
+.corte-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;align-items:flex-end;justify-content:center;}
 .corte-ov.show{display:flex;}
-.corte-box{background:var(--white);border-radius:16px;padding:24px;width:calc(100% - 40px);max-width:360px;box-shadow:0 8px 28px rgba(0,0,0,0.2);}
+.corte-box{background:var(--white);border-radius:16px 16px 0 0;padding:20px 20px 32px;width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -4px 28px rgba(0,0,0,0.18);}
 .corte-title{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--red);text-align:center;letter-spacing:1px;margin-bottom:4px;}
 .corte-fecha{font-size:12px;color:var(--g4);text-align:center;margin-bottom:16px;}
 .corte-stat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--g2);}
@@ -489,7 +490,7 @@ function entrar(){
   fbUrl = url;
   localStorage.setItem('rolys_caja_fb', fbUrl);
   document.getElementById('setup').style.display = 'none';
-  var appEl=document.getElementById('app');appEl.style.display='flex';appEl.style.flexDirection='column';appEl.style.height=window.innerHeight+'px';
+  var appEl=document.getElementById('app');appEl.style.display='flex';appEl.style.flexDirection='column';appEl.style.height=window.innerHeight+'px';setTimeout(function(){appEl.style.height=window.innerHeight+'px';},100);
   startPolling();
 }
 window.addEventListener('load',()=>{
@@ -499,7 +500,7 @@ window.addEventListener('load',()=>{
     // Auto-entrar si ya tenía URL guardada
     fbUrl=f;
     document.getElementById('setup').style.display='none';
-    var appEl=document.getElementById('app');appEl.style.display='flex';appEl.style.flexDirection='column';appEl.style.height=window.innerHeight+'px';
+    var appEl=document.getElementById('app');appEl.style.display='flex';appEl.style.flexDirection='column';appEl.style.height=window.innerHeight+'px';setTimeout(function(){appEl.style.height=window.innerHeight+'px';},100);
     startPolling();
   }
 });
@@ -614,7 +615,7 @@ function renderCard(key,c){
       <button class="btn-estado btn-pendiente" onclick="setEstado('${key}','pendiente')">⏳ Pendiente</button>
       <button class="btn-estado btn-lista" onclick="setEstado('${key}','lista')">✅ Lista</button>
       <button class="btn-estado btn-entregado" onclick="setEstado('${key}','entregado')">🤝 Entregada</button>
-      <button class="btn-estado" style="background:var(--green);color:#fff;border-color:var(--green);" onclick="openCobro('${key}')">💰 Cobrar</button>
+      <button class="btn-estado" style="background:var(--green);color:#fff;border-color:var(--green);${isUE?'display:none':''}" onclick="openCobro('${key}')">💰 Cobrar</button>
     </div>
     <div class="cmd-actions-row2">
       ${c.estado!=='entregado'?`<button class="btn-editar" onclick="toggleEdit('${key}')">✏️ Editar</button>`:'<div></div>'}
