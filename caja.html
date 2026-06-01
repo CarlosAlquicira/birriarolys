@@ -17,7 +17,7 @@
   --radius:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;}
+body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
 
 /* SETUP */
 #setup{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 20px;gap:14px;text-align:center;}
@@ -32,7 +32,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--g1);color:var(--text);min
 .btn-entrar{width:100%;background:var(--red);border:none;color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
 
 /* APP */
-#app{flex:1;display:none;flex-direction:column;overflow:hidden;height:100dvh;}
+#app{flex:1;display:none;flex-direction:column;overflow:hidden;min-height:0;max-height:100dvh;}
 
 header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:8px;}
 .hdr-logo{height:42px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;}
@@ -165,6 +165,21 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#fff;padding:9px 18px;border-radius:18px;font-size:13px;font-weight:600;opacity:0;transition:all 0.22s;z-index:999;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.err{background:var(--red);}
+
+.cobro-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:flex-end;justify-content:center;}
+.cobro-ov.show{display:flex;}
+.cobro-box{background:var(--white);border-top:3px solid var(--green);border-radius:18px 18px 0 0;width:100%;max-width:420px;padding:18px 16px 28px;animation:up 0.22s ease;max-height:92dvh;overflow-y:auto;}
+.cobro-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--green);margin-bottom:4px;}
+.cobro-total{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--red);line-height:1;margin-bottom:14px;}
+.cobro-label{font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;}
+.cobro-input{width:100%;border:1.5px solid var(--g2);border-radius:8px;padding:9px 11px;font-size:15px;font-weight:600;outline:none;font-family:inherit;margin-bottom:10px;}
+.cobro-input:focus{border-color:var(--green);}
+.cobro-metodos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.cobro-metodo{padding:12px;border:2px solid var(--g2);border-radius:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:var(--g5);background:var(--g1);}
+.cobro-metodo.sel{border-color:var(--green);background:var(--green-bg);color:var(--green);}
+.cobro-cambio{background:var(--amber-bg);border:1.5px solid var(--amber);border-radius:8px;padding:10px 12px;font-size:14px;font-weight:600;color:#7a5c00;text-align:center;margin-bottom:12px;display:none;}
+.btn-cobrar{width:100%;background:var(--green);border:none;color:#fff;padding:13px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;}
+.btn-cobrar:active{background:#15703b;}
 </style>
 </head>
 <body>
@@ -265,6 +280,50 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
       <button style="background:var(--blue);border:none;color:#fff;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;" onclick="imprimirCorte()">🖨️ Imprimir corte</button>
     </div>
     <button class="btn-corte-cerrar" id="btn-cerrar-dia" onclick="ejecutarCorte()" style="width:100%;margin-top:8px;">🗑️ Guardar en Sheets y cerrar día</button>
+  </div>
+</div>
+
+
+<!-- MODAL COBRO -->
+<div class="cobro-ov" id="cobroOv" onclick="closeCobroOv(event)">
+  <div class="cobro-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="cobro-title">Cobrar mesa</div>
+      <button onclick="closeCobroOv()" style="background:var(--g1);border:1px solid var(--g2);border-radius:50%;width:28px;height:28px;font-size:14px;cursor:pointer;">✕</button>
+    </div>
+    <div id="cobroMesaLabel" style="font-size:13px;color:var(--g4);margin-bottom:6px;"></div>
+    <div class="cobro-total" id="cobroTotal">$0</div>
+
+    <span class="cobro-label">Forma de pago</span>
+    <div class="cobro-metodos">
+      <div class="cobro-metodo sel" id="met_efectivo" onclick="setMetodo('efectivo')">💵 Efectivo</div>
+      <div class="cobro-metodo" id="met_tarjeta" onclick="setMetodo('tarjeta')">💳 Tarjeta</div>
+    </div>
+
+    <div id="efectivoWrap">
+      <span class="cobro-label">¿Con cuánto paga?</span>
+      <input class="cobro-input" id="cobroEfectivo" type="number" placeholder="$0" oninput="calcCambio()">
+      <div class="cobro-cambio" id="cobroCambio"></div>
+    </div>
+
+    <span class="cobro-label">Propina (opcional)</span>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
+      <button onclick="setPropina(0)"  class="propina-btn" data-val="0"  style="padding:8px 4px;border:1.5px solid var(--g2);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--g1);color:var(--g5);">Sin propina</button>
+      <button onclick="setPropina(10)" class="propina-btn" data-val="10" style="padding:8px 4px;border:1.5px solid var(--g2);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--g1);color:var(--g5);">10%</button>
+      <button onclick="setPropina(15)" class="propina-btn" data-val="15" style="padding:8px 4px;border:1.5px solid var(--g2);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--g1);color:var(--g5);">15%</button>
+      <button onclick="setPropina(20)" class="propina-btn" data-val="20" style="padding:8px 4px;border:1.5px solid var(--g2);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;background:var(--g1);color:var(--g5);">20%</button>
+    </div>
+    <span class="cobro-label">O ingresa el monto exacto de propina</span>
+    <input class="cobro-input" id="cobroPropina" type="number" placeholder="$0" oninput="clearPropinaBtn()">
+
+    <div id="cobroResumen" style="background:var(--g1);border-radius:8px;padding:10px 12px;font-size:13px;margin:10px 0;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:var(--g4);">Subtotal (sin IVA)</span><span id="resSubtotal">$0</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:var(--g4);">IVA (16%)</span><span id="resIva">$0</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="color:var(--g4);">Propina</span><span id="resPropina" style="color:var(--green);">$0</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:15px;border-top:1px solid var(--g2);padding-top:6px;margin-top:4px;"><span>Total a cobrar</span><span id="resTotalCobrar" style="color:var(--red);">$0</span></div>
+    </div>
+
+    <button class="btn-cobrar" onclick="confirmarCobro()">✓ Confirmar cobro</button>
   </div>
 </div>
 
@@ -535,6 +594,7 @@ function renderCard(key,c){
       <button class="btn-estado btn-pendiente" onclick="setEstado('${key}','pendiente')">⏳ Pendiente</button>
       <button class="btn-estado btn-lista" onclick="setEstado('${key}','lista')">✅ Lista</button>
       <button class="btn-estado btn-entregado" onclick="setEstado('${key}','entregado')">🤝 Entregada</button>
+      <button class="btn-estado" style="background:var(--green);color:#fff;border-color:var(--green);" onclick="openCobro('${key}')">💰 Cobrar</button>
     </div>
     <div class="cmd-actions-row2">
       ${c.estado!=='entregado'?`<button class="btn-editar" onclick="toggleEdit('${key}')">✏️ Editar</button>`:'<div></div>'}
@@ -674,9 +734,9 @@ function openCorte(){
   document.getElementById('corteFecha').textContent=fecha;
   document.getElementById('corteN').textContent=entregadas+' de '+vals.length;
   document.getElementById('corteP').textContent=pendientes;
-  document.getElementById('corteTotal').textContent='$'+total;
-  document.getElementById('corteMesa').textContent=`${nMesa} comandas: $${totalMesa}`;
-  document.getElementById('corteUE').textContent=`${nUE} pedidos: $${totalUE}`;
+  document.getElementById('corteTotal').textContent='$'+total.toFixed(2);
+  document.getElementById('corteMesa').textContent=`${nMesa} comandas: $${totalMesa.toFixed(2)}`;
+  document.getElementById('corteUE').textContent=`${nUE} pedidos: $${totalUE.toFixed(2)}`;
 
   // Desglose por producto
   const prodMap={};
@@ -704,7 +764,7 @@ function openCorte(){
     listEl.innerHTML=sorted.map(([nombre,d])=>
       `<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--g2);">
         <span style="color:var(--g5);">${d.qty}x ${nombre}</span>
-        <span style="color:var(--red);font-weight:600;">$${d.total}</span>
+        <span style="color:var(--red);font-weight:600;">$${d.total.toFixed(2)}</span>
       </div>`
     ).join('');
   }
@@ -744,16 +804,16 @@ function buildCorteTicket(){
   L.push(`Fecha: ${fecha}   Hora: ${hora}`);
   L.push('------------------------------------------');
   L.push('VENTAS POR CANAL:');
-  L.push(row('  Mesas / Para llevar','$'+totalMesa));
-  L.push(row('  Uber Eats','$'+totalUE));
+  L.push(row('  Mesas / Para llevar','$'+totalMesa.toFixed(2)));
+  L.push(row('  Uber Eats','$'+totalUE.toFixed(2)));
   L.push('------------------------------------------');
   L.push('PRODUCTOS VENDIDOS:');
   Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty).forEach(([nombre,d])=>{
     const nm=`  ${d.qty}x ${nombre}`.slice(0,W-8);
-    L.push(row(nm,'$'+d.total));
+    L.push(row(nm,'$'+d.total.toFixed(2)));
   });
   L.push('==========================================');
-  L.push(center('TOTAL: $'+total));
+  L.push(center('TOTAL: $'+total.toFixed(2)));
   L.push('==========================================');
   L.push(''); L.push(''); L.push('');
   return L.join('\n');
@@ -1224,6 +1284,138 @@ function loadScript(src){
     s.src=src; s.onload=resolve; s.onerror=reject;
     document.head.appendChild(s);
   });
+}
+
+
+// ── COBRO ─────────────────────────────────────────────────────────────────
+let cobroKey = null;
+let cobroMetodo = 'efectivo';
+let cobroTotalBase = 0;
+
+function openCobro(key){
+  const c = comandas[key];
+  if(!c) return;
+  cobroKey = key;
+  cobroMetodo = 'efectivo';
+  cobroTotalBase = c.total;
+
+  document.getElementById('cobroMesaLabel').textContent =
+    c.canal==='ubereats' ? 'Uber Eats · '+(c.cliente||'') : 'Mesa '+(c.mesa||'');
+  document.getElementById('cobroTotal').textContent = '$'+c.total;
+  document.getElementById('cobroEfectivo').value = '';
+  document.getElementById('cobroPropina').value = '';
+  document.getElementById('cobroCambio').style.display='none';
+
+  setMetodo('efectivo');
+  setPropina(0);
+  updateResumen();
+  document.getElementById('cobroOv').classList.add('show');
+}
+
+function closeCobroOv(e){
+  if(e && e.target !== e.currentTarget) return;
+  document.getElementById('cobroOv').classList.remove('show');
+}
+
+function setMetodo(m){
+  cobroMetodo = m;
+  document.getElementById('met_efectivo').className = 'cobro-metodo' + (m==='efectivo'?' sel':'');
+  document.getElementById('met_tarjeta').className  = 'cobro-metodo' + (m==='tarjeta'?' sel':'');
+  document.getElementById('efectivoWrap').style.display = m==='efectivo' ? 'block' : 'none';
+  if(m==='tarjeta') document.getElementById('cobroCambio').style.display='none';
+}
+
+function setPropina(pct){
+  document.querySelectorAll('.propina-btn').forEach(function(b){
+    const val = parseInt(b.getAttribute('data-val'));
+    b.style.background = val===pct ? '#1d8a4a' : '';
+    b.style.color = val===pct ? '#fff' : '';
+    b.style.borderColor = val===pct ? '#1d8a4a' : '';
+  });
+  const propina = pct > 0 ? Math.round(cobroTotalBase * pct / 100) : 0;
+  document.getElementById('cobroPropina').value = propina > 0 ? propina : '';
+  updateResumen();
+}
+
+function clearPropinaBtn(){
+  document.querySelectorAll('.propina-btn').forEach(function(b){
+    b.style.background=''; b.style.color=''; b.style.borderColor='';
+  });
+  updateResumen();
+}
+
+function calcCambio(){
+  const pagaCon = parseFloat(document.getElementById('cobroEfectivo').value)||0;
+  const propina = parseFloat(document.getElementById('cobroPropina').value)||0;
+  const totalCobrar = cobroTotalBase + propina;
+  const cambioEl = document.getElementById('cobroCambio');
+  if(pagaCon > 0 && pagaCon >= totalCobrar){
+    const cambio = pagaCon - totalCobrar;
+    cambioEl.textContent = 'Cambio: $' + cambio.toFixed(2);
+    cambioEl.style.display = 'block';
+  } else {
+    cambioEl.style.display = 'none';
+  }
+  updateResumen();
+}
+
+function updateResumen(){
+  const propina = parseFloat(document.getElementById('cobroPropina').value)||0;
+  const base = cobroTotalBase;
+  // IVA incluido en precio: base / 1.16 = sin IVA
+  const sinIva = base / 1.16;
+  const iva = base - sinIva;
+  const totalCobrar = base + propina;
+
+  document.getElementById('resSubtotal').textContent = '$'+sinIva.toFixed(2);
+  document.getElementById('resIva').textContent = '$'+iva.toFixed(2);
+  document.getElementById('resPropina').textContent = '$'+propina.toFixed(2);
+  document.getElementById('resTotalCobrar').textContent = '$'+totalCobrar.toFixed(2);
+}
+
+async function confirmarCobro(){
+  const c = comandas[cobroKey];
+  if(!c) return;
+
+  const propina = parseFloat(document.getElementById('cobroPropina').value)||0;
+  const pagaCon = parseFloat(document.getElementById('cobroEfectivo').value)||0;
+  const base = cobroTotalBase;
+  const sinIva = parseFloat((base / 1.16).toFixed(2));
+  const iva = parseFloat((base - sinIva).toFixed(2));
+
+  // Guardar datos de cobro en la comanda
+  const cobro = {
+    metodo: cobroMetodo,
+    subtotal: sinIva,
+    iva: iva,
+    totalProductos: base,
+    propina: propina,
+    totalCobrado: base + propina,
+    pagoCon: cobroMetodo==='efectivo' ? pagaCon : 0,
+    cambio: cobroMetodo==='efectivo' ? Math.max(0, pagaCon - (base+propina)) : 0,
+    hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})
+  };
+
+  // Actualizar en Firebase
+  try{
+    await fetch(fbUrl+'/comandas/'+cobroKey+'/cobro.json',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(cobro)
+    });
+    await fetch(fbUrl+'/comandas/'+cobroKey+'/estado.json',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify('entregado')
+    });
+    comandas[cobroKey].cobro = cobro;
+    comandas[cobroKey].estado = 'entregado';
+    document.getElementById('cobroOv').classList.remove('show');
+    renderList(); updateStats();
+    toast('Cobro registrado ✓ · '+cobroMetodo+(propina>0?' · Propina $'+propina:''));
+  }catch(e){
+    toast('Error al guardar cobro',true);
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
