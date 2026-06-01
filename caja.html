@@ -631,11 +631,12 @@ function renderCard(key,c){
 
 function updateStats(){
   const vals=Object.values(comandas);
+  const isUE=c=>c.canal==='ubereats';
   document.getElementById('stPend').textContent=vals.filter(c=>c.estado==='pendiente').length;
   document.getElementById('stList').textContent=vals.filter(c=>c.estado==='lista').length;
   const totalAll=parseFloat(vals.reduce((s,c)=>s+(parseFloat(c.total)||0),0).toFixed(2));
-  const totalUE=parseFloat(vals.filter(c=>c.canal==='ubereats').reduce((s,c)=>s+(parseFloat(c.total)||0),0).toFixed(2));
-  const totalMesa=parseFloat((totalAll-totalUE).toFixed(2));
+  const totalUE=parseFloat(vals.filter(isUE).reduce((s,c)=>s+(parseFloat(c.total)||0),0).toFixed(2));
+  const totalMesa=parseFloat(vals.filter(c=>!isUE(c)).reduce((s,c)=>s+(parseFloat(c.total)||0),0).toFixed(2));
   document.getElementById('stTotal').textContent='$'+totalAll.toFixed(2);
   const n=vals.length;
   document.getElementById('hdrSub').textContent=n>0?`${n} comandas | Mesas $${totalMesa.toFixed(2)} | UE $${totalUE.toFixed(2)}`:'Esperando comandas...';
@@ -748,21 +749,30 @@ async function eliminar(key){
 function openCorte(){
   const vals=Object.values(comandas);
   const f=v=>parseFloat((v||0).toFixed(2));
-  const sum=(arr,fn)=>f(arr.reduce((s,c)=>s+(fn(c)||0),0));
+  const sum=(arr,fn)=>f(arr.reduce((s,c)=>s+(parseFloat(fn(c))||0),0));
+
+  // Canal: ubereats si canal==='ubereats', todo lo demás es mesa/local
+  const isUE  = c=>c.canal==='ubereats';
+  const isMesa= c=>!isUE(c);
 
   const total      = sum(vals, c=>c.total);
-  const totalUE    = sum(vals.filter(c=>c.canal==='ubereats'), c=>c.total);
-  const totalMesa  = f(total-totalUE);
+  const totalUE    = sum(vals.filter(isUE),   c=>c.total);
+  const totalMesa  = sum(vals.filter(isMesa), c=>c.total);
+  const nUE        = vals.filter(isUE).length;
+  const nMesa      = vals.filter(isMesa).length;
   const entregadas = vals.filter(c=>c.estado==='entregado').length;
   const pendientes = vals.filter(c=>c.estado!=='entregado').length;
-  const nUE        = vals.filter(c=>c.canal==='ubereats').length;
-  const nMesa      = vals.filter(c=>!c.canal||c.canal==='mesa').length;
 
-  // Propinas y métodos de pago (solo comandas con cobro registrado)
-  const conCobro   = vals.filter(c=>c.cobro);
-  const propinas   = f(conCobro.reduce((s,c)=>s+(parseFloat(c.cobro.propina)||0),0));
-  const efectivo   = f(conCobro.filter(c=>c.cobro.metodo==='efectivo').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
-  const tarjeta    = f(conCobro.filter(c=>c.cobro.metodo==='tarjeta').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  // Cobros registrados (solo mesas — UE se cobra fuera)
+  const conCobro  = vals.filter(c=>c.cobro);
+  const cEfectivo = conCobro.filter(c=>c.cobro.metodo==='efectivo');
+  const cTarjeta  = conCobro.filter(c=>c.cobro.metodo==='tarjeta');
+  const propinas  = f(conCobro.reduce((s,c)=>s+(parseFloat(c.cobro.propina)||0),0));
+  const efectivo  = f(cEfectivo.reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  const tarjeta   = f(cTarjeta.reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+
+  // Total cobrado = mesas cobradas + todo UE (UE ya viene cobrado)
+  const totalCobrado = f(efectivo + tarjeta + totalUE);
 
   const fecha=new Date().toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('corteFecha').textContent=fecha;
@@ -771,9 +781,20 @@ function openCorte(){
   document.getElementById('corteTotal').textContent='$'+total.toFixed(2);
   document.getElementById('corteMesa').textContent=`${nMesa} comandas: $${totalMesa.toFixed(2)}`;
   document.getElementById('corteUE').textContent=`${nUE} pedidos: $${totalUE.toFixed(2)}`;
-  document.getElementById('corteEfectivo').textContent='$'+efectivo.toFixed(2);
-  document.getElementById('corteTarjeta').textContent='$'+tarjeta.toFixed(2);
+  document.getElementById('corteEfectivo').textContent=`${cEfectivo.length} comandas: $${efectivo.toFixed(2)}`;
+  document.getElementById('corteTarjeta').textContent=`${cTarjeta.length} comandas: $${tarjeta.toFixed(2)}`;
   document.getElementById('cortePropinas').textContent='$'+propinas.toFixed(2);
+
+  // Agregar fila total cobrado si no existe
+  let tcEl=document.getElementById('corteTotalCobrado');
+  if(!tcEl){
+    const newStat=document.createElement('div');
+    newStat.className='corte-stat';
+    newStat.innerHTML=`<span class="corte-stat-lbl">✅ Total cobrado</span><span class="corte-stat-val big" id="corteTotalCobrado" style="color:var(--green)">$0</span>`;
+    document.getElementById('cortePropinas').closest('.corte-stat').insertAdjacentElement('afterend',newStat);
+    tcEl=document.getElementById('corteTotalCobrado');
+  }
+  tcEl.textContent='$'+totalCobrado.toFixed(2);
 
   // Desglose por producto
   const prodMap={};
@@ -811,15 +832,20 @@ function openCorte(){
 function buildCorteTicket(){
   const vals=Object.values(comandas);
   const f=v=>parseFloat((v||0).toFixed(2));
-  const sum=(arr,fn)=>f(arr.reduce((s,c)=>s+(fn(c)||0),0));
+  const sum=(arr,fn)=>f(arr.reduce((s,c)=>s+(parseFloat(fn(c))||0),0));
+  const isUE=c=>c.canal==='ubereats';
 
   const total     = sum(vals, c=>c.total);
-  const totalUE   = sum(vals.filter(c=>c.canal==='ubereats'), c=>c.total);
-  const totalMesa = f(total-totalUE);
+  const totalUE   = sum(vals.filter(isUE),        c=>c.total);
+  const totalMesa = sum(vals.filter(c=>!isUE(c)), c=>c.total);
+  const nUE       = vals.filter(isUE).length;
   const conCobro  = vals.filter(c=>c.cobro);
+  const cEfectivo = conCobro.filter(c=>c.cobro.metodo==='efectivo');
+  const cTarjeta  = conCobro.filter(c=>c.cobro.metodo==='tarjeta');
   const propinas  = f(conCobro.reduce((s,c)=>s+(parseFloat(c.cobro.propina)||0),0));
-  const efectivo  = f(conCobro.filter(c=>c.cobro.metodo==='efectivo').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
-  const tarjeta   = f(conCobro.filter(c=>c.cobro.metodo==='tarjeta').reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  const efectivo  = f(cEfectivo.reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  const tarjeta   = f(cTarjeta.reduce((s,c)=>s+(parseFloat(c.cobro.totalCobrado)||0),0));
+  const totalCobrado = f(efectivo+tarjeta+totalUE);
 
   const fecha=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
   const hora=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
@@ -846,25 +872,26 @@ function buildCorteTicket(){
   L.push(center('BIRRIA ROLYS COAPA'));
   L.push(center('CORTE DEL DIA'));
   L.push('==========================================');
-  L.push(`Fecha: ${fecha}   Hora: ${hora}`);
+  L.push('Fecha: '+fecha+'   Hora: '+hora);
   L.push('------------------------------------------');
   L.push('VENTAS POR CANAL:');
   L.push(row('  Mesas / Para llevar','$'+totalMesa.toFixed(2)));
-  L.push(row('  Uber Eats','$'+totalUE.toFixed(2)));
+  L.push(row('  Uber Eats ('+nUE+' pedidos)','$'+totalUE.toFixed(2)));
   L.push('------------------------------------------');
   L.push('FORMA DE PAGO:');
-  L.push(row('  Efectivo','$'+efectivo.toFixed(2)));
-  L.push(row('  Tarjeta','$'+tarjeta.toFixed(2)));
+  L.push(row('  Efectivo ('+cEfectivo.length+')','$'+efectivo.toFixed(2)));
+  L.push(row('  Tarjeta ('+cTarjeta.length+')','$'+tarjeta.toFixed(2)));
   L.push(row('  Propinas','$'+propinas.toFixed(2)));
   L.push('------------------------------------------');
   L.push('PRODUCTOS VENDIDOS:');
-  Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty).forEach(([nombre,d])=>{
-    const nm=`  ${d.qty}x ${nombre}`.slice(0,W-8);
+  Object.entries(prodMap).sort((a,b)=>b[1].qty-a[1].qty).forEach(function(entry){
+    var nombre=entry[0]; var d=entry[1];
+    var nm=('  '+d.qty+'x '+nombre).slice(0,W-8);
     L.push(row(nm,'$'+d.total.toFixed(2)));
   });
   L.push('==========================================');
   L.push(center('TOTAL VENTAS: $'+total.toFixed(2)));
-  L.push(center('TOTAL COBRADO: $'+(f(efectivo+tarjeta)).toFixed(2)));
+  L.push(center('TOTAL COBRADO: $'+totalCobrado.toFixed(2)));
   L.push('==========================================');
   L.push(''); L.push(''); L.push('');
   return L.join('\n');
