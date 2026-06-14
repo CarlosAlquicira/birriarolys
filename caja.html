@@ -403,13 +403,13 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 const MENU_CAJA = [
   {cat:"Birria", items:[
     {id:"c1", n:"Plato de Birria con Carne", v:[{l:"Chico 100g",p:99},{l:"Grande 200g",p:169}]},
-    {id:"c2", n:"Consome sin Carne", v:[{l:"Chico 300ml",p:34},{l:"Grande 500ml",p:54}]},
-    {id:"r1", n:"Ramen de Birria", v:[{l:"Chico 50g",p:99},{l:"Grande 100g",p:129}]},
-    {id:"r2", n:"Ramen de Birria con Huevo", v:[{l:"Chico 50g",p:109},{l:"Grande 100g",p:139}]},
-    {id:"t1", n:"Taco Suave", v:[{l:"Individual",p:35},{l:"Orden 3",p:109},{l:"Orden 5",p:179}]},
-    {id:"q1", n:"Quesabirria Maiz", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
-    {id:"q2", n:"Quesabirria Harina", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
-    {id:"q3", n:"Gringa de Birria", v:[{l:"Maiz",p:109},{l:"Harina",p:109}]}
+    {id:"c2", n:"Consome sin Carne", v:[{l:"Chico 300ml",p:45},{l:"Grande 500ml",p:65}]},
+    {id:"r1", n:"Ramen de Birria", v:[{l:"Chico 100g",p:115},{l:"Grande 200g",p:155}]},
+    {id:"r2", n:"Ramen de Birria con Huevo", v:[{l:"Chico 100g",p:125},{l:"Grande 200g",p:165}]},
+    {id:"t1", n:"Taco Suave", v:[{l:"Individual",p:40},{l:"Orden 3",p:115},{l:"Orden 5",p:190}]},
+    {id:"q1", n:"Quesabirria Maiz", v:[{l:"Individual",p:45},{l:"Orden 3",p:130},{l:"Orden 5",p:215}]},
+    {id:"q2", n:"Quesabirria Harina", v:[{l:"Individual",p:45},{l:"Orden 3",p:130},{l:"Orden 5",p:215}]},
+    {id:"q3", n:"Gringa de Birria", v:[{l:"Maiz",p:130},{l:"Harina",p:130}]}
   ]},
   {cat:"Bebidas", items:[
     {id:"b1", n:"Agua Fresca", v:[{l:"Medio Litro",p:35},{l:"1 Litro",p:60}]},
@@ -421,7 +421,7 @@ const MENU_CAJA = [
     {id:"b7", n:"Del Valle Mango", s:"355ml", p:35},
     {id:"b8", n:"Topo Chico", s:"355ml", p:35},
     {id:"b9", n:"Electrolit", s:"625ml", p:45, sabores:["Ponche de Fruta","Naranja","Limon","Uva","Mora Azul","Manzana","Maracuya"]},
-    {id:"b10", n:"Cafe del dia", v:[{l:"Chico 180ml",p:39},{l:"Grande 250ml",p:49}]}
+    {id:"b10", n:"Cafe Americano", v:[{l:"180ml",p:40},{l:"280ml",p:50}]}
   ]}
 ];
 
@@ -592,9 +592,9 @@ function renderCard(key,c){
       editHtml+=p.items.map((item,ii)=>`
         <div class="edit-line">
           <div class="edit-qty-ctrl">
-            <button class="eqbtn" onclick="editQty('${key}',${pi},${ii},-1)">−</button>
+            <button class="eqbtn" data-action="editqty" data-key="${key}" data-pi="${pi}" data-ii="${ii}" data-delta="-1">−</button>
             <div class="eqnum">${item.qty}</div>
-            <button class="eqbtn" onclick="editQty('${key}',${pi},${ii},1)">+</button>
+            <button class="eqbtn" data-action="editqty" data-key="${key}" data-pi="${pi}" data-ii="${ii}" data-delta="1">+</button>
           </div>
           <span class="edit-name">${item.nombre}</span>
           <span class="edit-price">$${item.subtotal}</span>
@@ -615,16 +615,16 @@ function renderCard(key,c){
     ${c.nota?`<div class="cmd-nota">📝 ${c.nota}</div>`:''}
     ${editHtml}
     <div class="cmd-actions">
-      <button class="btn-estado btn-pendiente" onclick="setEstado('${key}','pendiente')">⏳ Pendiente</button>
-      <button class="btn-estado btn-lista" onclick="setEstado('${key}','lista')">✅ Lista</button>
-      <button class="btn-estado btn-entregado" onclick="setEstado('${key}','entregado')">🤝 Entregada</button>
-      <button class="btn-estado" style="background:var(--green);color:#fff;border-color:var(--green);${isUE?'display:none':''}" onclick="openCobro('${key}')">💰 Cobrar</button>
+      <button class="btn-estado btn-pendiente" data-action="estado" data-key="${key}" data-estado="pendiente">⏳ Pendiente</button>
+      <button class="btn-estado btn-lista" data-action="estado" data-key="${key}" data-estado="lista">✅ Lista</button>
+      <button class="btn-estado btn-entregado" data-action="estado" data-key="${key}" data-estado="entregado">🤝 Entregada</button>
+      <button class="btn-estado" style="background:var(--green);color:#fff;border-color:var(--green);${isUE?'display:none':''}" data-action="cobrar" data-key="${key}">💰 Cobrar</button>
     </div>
     <div class="cmd-actions-row2">
-      ${c.estado!=='entregado'?`<button class="btn-editar" onclick="toggleEdit('${key}')">✏️ Editar</button>`:'<div></div>'}
-      ${c.estado!=='entregado'?`<button class="btn-agregar" onclick="openAddMenu('${key}','Mesa ${c.mesa}')">➕ Agregar</button>`:'<div></div>'}
-      <button class="btn-imprimir" onclick="printTicketByKey('${key}')">🖨️ Imprimir</button>
-      <button class="btn-eliminar" onclick="eliminar('${key}')">✕</button>
+      ${c.estado!=='entregado'?`<button class="btn-editar" data-action="edit" data-key="${key}">✏️ Editar</button>`:'<div></div>'}
+      ${c.estado!=='entregado'?`<button class="btn-agregar" data-action="add" data-key="${key}" data-mesa="Mesa ${c.mesa}">➕ Agregar</button>`:'<div></div>'}
+      <button class="btn-imprimir" data-action="print" data-key="${key}">🖨️ Imprimir</button>
+      <button class="btn-eliminar" data-action="delete" data-key="${key}">✕</button>
     </div>
   </div>`;
 }
@@ -1495,6 +1495,35 @@ async function confirmarCobro(){
     toast('Error al guardar cobro',true);
   }
 }
+
+// ── DELEGACIÓN DE EVENTOS — todos los botones de tarjetas ─────────────────
+document.getElementById('listWrap').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  var action = btn.getAttribute('data-action');
+  var key    = btn.getAttribute('data-key');
+  if(!key) return;
+  if(action==='estado'){
+    var estado = btn.getAttribute('data-estado');
+    setEstado(key, estado);
+  } else if(action==='edit'){
+    toggleEdit(key);
+  } else if(action==='add'){
+    var mesa = btn.getAttribute('data-mesa')||'Mesa';
+    openAddMenu(key, mesa);
+  } else if(action==='print'){
+    printTicketByKey(key);
+  } else if(action==='delete'){
+    eliminar(key);
+  } else if(action==='cobrar'){
+    openCobro(key);
+  } else if(action==='editqty'){
+    var pi    = parseInt(btn.getAttribute('data-pi'));
+    var ii    = parseInt(btn.getAttribute('data-ii'));
+    var delta = parseInt(btn.getAttribute('data-delta'));
+    editQty(key, pi, ii, delta);
+  }
+});
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 document.getElementById('btnEntrar').addEventListener('click', entrar);
