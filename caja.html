@@ -656,17 +656,31 @@ function toggleEdit(key){
 }
 async function editQty(key,pi,ii,delta){
   if(!comandas[key]||!comandas[key].personas)return;
-  const item=comandas[key].personas[pi].items[ii];
-  item.qty+=delta;
-  if(item.qty<1)item.qty=1;
-  item.subtotal=item.precio*item.qty;
+  const persona = comandas[key].personas[pi];
+  if(!persona||!persona.items[ii])return;
+  const item = persona.items[ii];
+
+  item.qty += delta;
+
+  if(item.qty <= 0){
+    // Eliminar el ítem
+    persona.items.splice(ii, 1);
+    // Si la persona quedó sin items, eliminarla también
+    if(persona.items.length === 0){
+      comandas[key].personas.splice(pi, 1);
+    }
+  } else {
+    item.subtotal = parseFloat((item.precio * item.qty).toFixed(2));
+  }
+
   // Recalcular total
-  let total=0;
-  comandas[key].personas.forEach(p=>p.items.forEach(i=>total+=i.subtotal));
-  comandas[key].total=total;
+  let total = 0;
+  comandas[key].personas.forEach(p=>p.items.forEach(i=>total+=parseFloat(i.subtotal||0)));
+  comandas[key].total = parseFloat(total.toFixed(2));
+
   try{
     await fetch(`${fbUrl}/comandas/${key}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({personas:comandas[key].personas,total})});
+      body:JSON.stringify({personas:comandas[key].personas, total:comandas[key].total})});
     renderList();updateStats();
   }catch{toast('Error al guardar',true);}
 }
