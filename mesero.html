@@ -225,14 +225,14 @@ header{background:var(--white);border-bottom:3px solid var(--red);padding:8px 12
 <script>
 const MENU_LOCAL = [
   {cat:"Birria", items:[
-    {id:"c1", n:"Plato de Birria con Carne", v:[{l:"Chico 100g",p:99},{l:"Grande 200g",p:169}]},
-    {id:"c2", n:"Consome sin Carne", v:[{l:"Chico 300ml",p:34},{l:"Grande 500ml",p:54}]},
-    {id:"r1", n:"Ramen de Birria", v:[{l:"Chico 50g",p:99},{l:"Grande 100g",p:129}]},
-    {id:"r2", n:"Ramen de Birria con Huevo", v:[{l:"Chico 50g",p:109},{l:"Grande 100g",p:139}]},
-    {id:"t1", n:"Taco Suave", v:[{l:"Individual",p:35},{l:"Orden 3",p:109},{l:"Orden 5",p:179}]},
-    {id:"q1", n:"Quesabirria Maiz", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
-    {id:"q2", n:"Quesabirria Harina", v:[{l:"Individual",p:39},{l:"Orden 3",p:119},{l:"Orden 5",p:199}]},
-    {id:"q3", n:"Gringa de Birria", v:[{l:"Maiz",p:109},{l:"Harina",p:109}]}
+    {id:"c1", n:"Plato de Birria con Carne", p:180},
+    {id:"c2", n:"Consome sin Carne", v:[{l:"300ml",p:34},{l:"500ml",p:54},{l:"1 Litro",p:100}]},
+    {id:"r1", n:"Ramen de Birria", p:170},
+    {id:"r2", n:"Ramen de Birria con Huevo Duro", p:180},
+    {id:"t1", n:"Taco Suave", v:[{l:"Individual",p:40},{l:"Orden 3",p:115},{l:"Orden 5",p:195}]},
+    {id:"q1", n:"Quesabirria Maiz", v:[{l:"Individual",p:45},{l:"Orden 3",p:130},{l:"Orden 5",p:220}]},
+    {id:"q2", n:"Quesabirria Harina", v:[{l:"Individual",p:45},{l:"Orden 3",p:130},{l:"Orden 5",p:220}]},
+    {id:"q3", n:"Gringa de Birria", v:[{l:"Maiz",p:130},{l:"Harina",p:130}]}
   ]},
   {cat:"Bebidas", items:[
     {id:"b1", n:"Agua Fresca", v:[{l:"Medio Litro",p:35},{l:"1 Litro",p:60}]},
@@ -244,35 +244,36 @@ const MENU_LOCAL = [
     {id:"b7", n:"Del Valle Mango", s:"355ml", p:35},
     {id:"b8", n:"Topo Chico", s:"355ml", p:35},
     {id:"b9", n:"Electrolit", s:"625ml", p:45, sabores:["Ponche de Fruta","Naranja","Limon","Uva","Mora Azul","Manzana","Maracuya"]},
-    {id:"b10", n:"Cafe del dia", v:[{l:"Chico 180ml",p:39},{l:"Grande 250ml",p:49}]}
+    {id:"b10", n:"Cafe Americano", v:[{l:"180ml",p:40},{l:"280ml",p:50}]}
   ]}
 ];
 
 const MENU_UE = [
   {cat:"Birria UE", items:[
-    {id:"u_plato_ch",  n:"Plato de Birria con Carne Chico",  p:97.53},
-    {id:"u_plato_gr",  n:"Plato de Birria con Carne Grande", p:165.01},
-    {id:"u_conso_ch",  n:"Consome sin Carne Chico 300ml",    p:36.19},
-    {id:"u_conso_gr",  n:"Consome sin Carne Grande 1lt",     p:48.46},
-    {id:"u_ramen_ch",  n:"Ramen de Birria Chico",            p:91.40},
-    {id:"u_ramen_gr",  n:"Ramen de Birria Grande",           p:115.94},
-    {id:"u_promo",     n:"Promo Ramen",                      p:91.40},
+    
+    {id:"u_plato_gr",  n:"Plato de Birria con Carne",        p:181.77},
+    {id:"u_conso_ch",  n:"Consome sin Carne 300ml",          p:35.77},
+    {id:"u_conso_md",  n:"Consome sin Carne 500ml",          p:55.48},
+    {id:"u_conso_gr",  n:"Consome sin Carne 1 Litro",         p:101.47},
+    {id:"u_ramen",     n:"Ramen de Birria",                  p:171.55},
+    {id:"u_ramen_h",   n:"Ramen de Birria con Huevo Duro",   p:181.77},
+    
     {id:"u_extbirria", n:"Extra Birria 100g",                p:54.59},
     {id:"u_exthuevo",  n:"Extra Huevo",                      p:14.72},
     {id:"u_exttort",   n:"Extra Tortillas",                  p:8.59},
-    {id:"u_taco_ind",  n:"Taco Suave Individual",            p:33.74},
+    {id:"u_taco_ind",  n:"Taco Suave Individual",            p:40.15},
     {id:"u_tacos3",    n:"Orden Tacos Suaves 3 pzas",        p:103.67},
     {id:"u_tacos5",    n:"Orden Tacos Suaves 5 pzas",        p:165.01},
     {id:"u_qamar_ind", n:"Quesabirria Maiz Individual",      p:36.19},
     {id:"u_qhar_ind",  n:"Quesabirria Harina Individual",    p:36.19},
-    {id:"u_qamar3",    n:"Quesabirria Maiz Orden 3",         p:109.80},
-    {id:"u_qhar3",     n:"Quesabirria Harina Orden 3",       p:109.80},
+    {id:"u_qamar3",    n:"Quesabirria Maiz Orden 3",         p:130.67},
+    {id:"u_qhar3",     n:"Quesabirria Harina Orden 3",       p:130.67},
     {id:"u_qamar5",    n:"Quesabirria Maiz Orden 5",         p:183.41},
     {id:"u_qhar5",     n:"Quesabirria Harina Orden 5",       p:183.41}
   ]},
   {cat:"Bebidas UE", items:[
-    {id:"u_coca",   n:"Coca-Cola",       p:27.60},
-    {id:"u_cocasa", n:"Coca-Cola S/A",   p:27.60},
+    {id:"u_coca",   n:"Coca-Cola",       p:32.85},
+    {id:"u_cocasa", n:"Coca-Cola S/A",   p:32.85},
     {id:"u_mundet", n:"Sidral Mundet",   p:36.19},
     {id:"u_topo",   n:"Topo Chico 600ml",p:36.19},
     {id:"u_suero_m",n:"Suero Manzana",   p:40.43},
